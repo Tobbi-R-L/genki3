@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>文法道場 — Grammar & Vocab Dojo</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="道場" />
+<meta name="theme-color" content="#EBE3D0" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+<style>
+  html, body { margin: 0; padding: 0; }
+  * { box-sizing: border-box; }
+  button { outline: none; }
+  button:focus { outline: none; }
+  @keyframes stampDown {
+    0% { transform: scale(2.4) rotate(-14deg); opacity: 0; }
+    60% { transform: scale(0.92) rotate(-8deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-8deg); opacity: 1; }
+  }
+  @keyframes inkIn {
+    0% { transform: scale(1.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/plain" id="app-source">
+const { useState, useEffect, useMemo } = React;
+
+const GRAMMAR_ITEMS = [
+  { id: "c1-1", chapter: 1, point: "Xは Yです", type: "fill",
+    sentence: "Say 'I am a student.' (わたし＝I)",
+    answer: "わたしはがくせいです。", note: "Basic pattern: [topic]は [noun]です。" },
+  { id: "c1-1b", chapter: 1, point: "Xは Yです", type: "fill",
+    sentence: "Say 'My friend is a nurse.' (ともだち＝friend, かんごし＝nurse)",
+    answer: "ともだちはかんごしです。", note: "Basic pattern: [topic]は [noun]です。" },
+  { id: "c1-2", chapter: 1, point: "Question sentences (か)", type: "fill",
+    sentence: "Turn this into a question: たなかさんはせんせいです。",
+    answer: "たなかさんはせんせいですか。", note: "Add か to the end — no question mark needed。" },
+  { id: "c1-2b", chapter: 1, point: "Question sentences (か)", type: "fill",
+    sentence: "Turn this into a question: おとうとはだいがくせいです。",
+    answer: "おとうとはだいがくせいですか。", note: "Add か to the end — no question mark needed。" },
+  { id: "c1-3", chapter: 1, point: "Noun1のNoun2 (possession)", type: "mc",
+    sentence: "＿＿＿せんこうはこくさいかんけいです。(Tanaka's major)", answer: "たなかさんの",
+    options: ["たなかさんの", "たなかさんは", "たなかさんを", "たなかさんが"],
+    translation: "Mr./Ms. Tanaka's major is international relations.", note: "Noun1の Noun2 = Noun1's Noun2。" },
+  { id: "c1-3b", chapter: 1, point: "Noun1のNoun2 (possession)", type: "mc",
+    sentence: "＿＿＿おねえさんはいしゃです。(Yamada's older sister)", answer: "やまださんの",
+    options: ["やまださんの", "やまださんは", "やまださんを", "やまださんが"],
+    translation: "Mr./Ms. Yamada's older sister is a doctor.", note: "Noun1の Noun2 = Noun1's Noun2。" },
+  { id: "c1-4", chapter: 1, point: "Noun1のNoun2 (possession)", type: "translate", dir: "en-jp",
+    sentence: "My major is Asian studies.",
+    translation: "わたしのせんこうはアジアけんきょうです。",
+    note: "わたしの here shows possession — 'my major'。" },
+  { id: "c1-4b", chapter: 1, point: "Noun1のNoun2 (possession)", type: "translate", dir: "jp-en",
+    sentence: "たなかさんのせんこうはせいじです。",
+    translation: "Mr./Ms. Tanaka's major is politics.",
+    note: "Noun1の Noun2 = Noun1's Noun2。" },
+
+  { id: "c2-1", chapter: 2, point: "これ／それ／あれ／どれ", type: "mc",
+    sentence: "(the book is near the listener) ＿＿＿はほんです。", answer: "それ",
+    options: ["これ", "それ", "あれ", "どれ"],
+    translation: "That is a book.", note: "それ = near the listener, away from the speaker。" },
+  { id: "c2-1b", chapter: 2, point: "これ／それ／あれ／どれ", type: "mc",
+    sentence: "(the bicycle is far from both speakers) ＿＿＿はじてんしゃです。", answer: "あれ",
+    options: ["これ", "それ", "あれ", "どれ"],
+    translation: "That over there is a bicycle.", note: "あれ = far from both speaker and listener。" },
+  { id: "c2-2", chapter: 2, point: "この／その／あの／どの＋Noun", type: "mc",
+    sentence: "＿＿＿ペンはわたしのです。(pen is far from both speakers)", answer: "あの",
+    options: ["この", "その", "あの", "どの"],
+    translation: "That pen over there is mine.", note: "この／その／あの must be followed by a noun。" },
+  { id: "c2-2b", chapter: 2, point: "この／その／あの／どの＋Noun", type: "mc",
+    sentence: "＿＿＿かさはわたしのです。(umbrella near the speaker)", answer: "この",
+    options: ["この", "その", "あの", "どの"],
+    translation: "This umbrella is mine.", note: "この＋noun refers to something near the speaker。" },
+  { id: "c2-3", chapter: 2, point: "ここ／そこ／あそこ／どこ", type: "mc",
+    sentence: "としょかんは＿＿＿です。(over there, far from both speakers)", answer: "あそこ",
+    options: ["ここ", "そこ", "あそこ", "どこ"],
+    translation: "The library is over there.", note: "あそこ pairs with あの／あれ — same distance logic。" },
+  { id: "c2-3b", chapter: 2, point: "ここ／そこ／あそこ／どこ", type: "mc",
+    sentence: "ぎんこうは＿＿＿です。(near the listener)", answer: "そこ",
+    options: ["ここ", "そこ", "あそこ", "どこ"],
+    translation: "The bank is there (near you).", note: "そこ pairs with それ／その — near the listener。" },
+  { id: "c2-4", chapter: 2, point: "だれのNoun", type: "fill",
+    sentence: "Ask 'Whose bag is this?'",
+    answer: "これはだれのかばんですか。", note: "だれの Noun = whose Noun。" },
+  { id: "c2-4b", chapter: 2, point: "だれのNoun", type: "fill",
+    sentence: "Ask 'Whose umbrella is this?'",
+    answer: "これはだれのかさですか。", note: "だれの Noun = whose Noun。" },
+  { id: "c2-5", chapter: 2, point: "Noun も", type: "translate", dir: "jp-en",
+    sentence: "たなかさんもがくせいです。",
+    translation: "Mr./Ms. Tanaka is also a student.", note: "も replaces は when adding 'also'。" },
+  { id: "c2-5b", chapter: 2, point: "Noun も", type: "translate", dir: "en-jp",
+    sentence: "This bag is also expensive.",
+    translation: "このかばんもたかいです。", note: "も replaces は when adding 'also'。" },
+  { id: "c2-6", chapter: 2, point: "Noun じゃないです", type: "fill",
+    sentence: "Negate this: これはとけいです。",
+    answer: "これはとけいじゃないです。", altAnswers: ["これはとけいじゃありません。"],
+    translation: "This is not a watch.", note: "です → じゃないです or じゃありません。" },
+  { id: "c2-6b", chapter: 2, point: "Noun じゃないです", type: "fill",
+    sentence: "Negate this: これはさいふです。",
+    answer: "これはさいふじゃないです。", altAnswers: ["これはさいふじゃありません。"],
+    translation: "This is not a wallet.", note: "です → じゃないです or じゃありません。" },
+  { id: "c2-7", chapter: 2, point: "～ね／～よ", type: "mc",
+    sentence: "このとんかつはおいしいです＿。(seeking agreement, 'isn't it?')", answer: "ね",
+    options: ["ね", "よ", "か", "の"],
+    translation: "This pork cutlet is delicious, isn't it?", note: "ね invites agreement; よ asserts new info。" },
+  { id: "c2-7b", chapter: 2, point: "～ね／～よ", type: "mc",
+    sentence: "そのぼうしはたかいです＿。(telling the listener something new)", answer: "よ",
+    options: ["ね", "よ", "か", "の"],
+    translation: "That hat is expensive, you know.", note: "よ asserts information the listener may not know。" },
+
+  { id: "c3-1", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill",
+    sentence: "Conjugate のむ (to drink) into the ます-form.",
+    answer: "のみます", note: "u-verb: change final -u to -i, add ます。" },
+  { id: "c3-1b", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill",
+    sentence: "Conjugate よむ (to read) into the ます-form.",
+    answer: "よみます", note: "u-verb: change final -u to -i, add ます。" },
+  { id: "c3-2", chapter: 3, point: "Verb types", type: "mc",
+    sentence: "Which of these is a る-verb (ichidan)?", answer: "たべる",
+    options: ["たべる", "のむ", "きく", "はなす"],
+    note: "る-verbs drop る and add ます／て／た directly to the stem。" },
+  { id: "c3-2b", chapter: 3, point: "Verb types", type: "mc",
+    sentence: "Which of these is an irregular verb?", answer: "する",
+    options: ["する", "たべる", "のむ", "きく"],
+    note: "する and くる are the only two irregular verbs in Japanese。" },
+  { id: "c3-3", chapter: 3, point: "Particles を", type: "mc",
+    sentence: "コーヒー＿のみます。", answer: "を",
+    options: ["を", "が", "で", "に"],
+    translation: "I drink coffee.", note: "を marks the direct object of a verb。" },
+  { id: "c3-3b", chapter: 3, point: "Particles を", type: "mc",
+    sentence: "テレビ＿みます。", answer: "を",
+    options: ["を", "が", "で", "に"],
+    translation: "I watch TV.", note: "を marks the direct object of a verb。" },
+  { id: "c3-4", chapter: 3, point: "Particles に (time)", type: "mc",
+    sentence: "いちじ＿おきます。(gets up AT 1:00)", answer: "に",
+    options: ["に", "で", "を", "は"],
+    translation: "I get up at 1:00.", note: "に attaches to a specific clock time。" },
+  { id: "c3-4b", chapter: 3, point: "Particles に (time)", type: "mc",
+    sentence: "にじはん＿ねます。(goes to bed AT 2:30)", answer: "に",
+    options: ["に", "で", "を", "は"],
+    translation: "I go to bed at 2:30.", note: "に attaches to a specific clock time。" },
+  { id: "c3-5", chapter: 3, point: "Time references (から～まで)", type: "fill",
+    sentence: "Say 'School is from 9:00 to 3:00.' (くじ＝9:00, さんじ＝3:00)",
+    answer: "がっこうはくじからさんじまでです。", note: "から = from, まで = until。" },
+  { id: "c3-5b", chapter: 3, point: "Time references (から～まで)", type: "fill",
+    sentence: "Say 'The library is open from 10:00 to 6:00.' (じゅうじ＝10:00, ろくじ＝6:00)",
+    answer: "としょかんはじゅうじからろくじまでです。", note: "から = from, まで = until。" },
+  { id: "c3-6", chapter: 3, point: "～ませんか (invitation)", type: "translate", dir: "en-jp",
+    sentence: "Won't you eat breakfast?",
+    translation: "あさごはんをたべませんか。",
+    note: "ませんか softly invites someone to do something with you。" },
+  { id: "c3-6b", chapter: 3, point: "～ませんか (invitation)", type: "translate", dir: "en-jp",
+    sentence: "Won't you drink some tea?",
+    translation: "おちゃをのみませんか。",
+    note: "ませんか softly invites someone to do something with you。" },
+  { id: "c3-7", chapter: 3, point: "Frequency adverbs", type: "mc",
+    sentence: "わたしは＿＿＿ おさけをのみません。(never drinks alcohol)", answer: "ぜんぜん",
+    options: ["ぜんぜん", "たいてい", "よく", "ときどき"],
+    translation: "I never drink alcohol.", note: "ぜんぜん must pair with a negative verb。" },
+  { id: "c3-7b", chapter: 3, point: "Frequency adverbs", type: "mc",
+    sentence: "わたしは＿＿＿ にほんごをべんきょうします。(often)", answer: "よく",
+    options: ["よく", "ぜんぜん", "あまり", "ときどき"],
+    translation: "I often study Japanese.", note: "Frequency adverbs sit right before the verb。" },
+  { id: "c3-8", chapter: 3, point: "Topic particle は (contrastive)", type: "translate", dir: "jp-en",
+    sentence: "あさごはんはたべますが、ばんごはんはたべません。",
+    translation: "I eat breakfast, but I don't eat dinner.",
+    note: "は marks contrast between two topics; が here means 'but'。" },
+  { id: "c3-8b", chapter: 3, point: "Topic particle は (contrastive)", type: "translate", dir: "jp-en",
+    sentence: "にほんごはべんきょうしますが、えいごはべんきょうしません。",
+    translation: "I study Japanese, but I don't study English.",
+    note: "は marks contrast between two topics; が here means 'but'。" },
+
+  { id: "c4-1", chapter: 4, point: "Xが あります／います", type: "mc",
+    sentence: "こうえんに ねこが＿＿＿。(there is a cat in the park)", answer: "います",
+    options: ["います", "あります", "です", "いました"],
+    translation: "There is a cat in the park.", note: "います = animate, あります = inanimate。" },
+  { id: "c4-1b", chapter: 4, point: "Xが あります／います", type: "mc",
+    sentence: "つくえのうえに ほんが＿＿＿。(there is a book on the desk)", answer: "あります",
+    options: ["あります", "います", "です", "ありました"],
+    translation: "There is a book on the desk.", note: "あります = inanimate things。" },
+  { id: "c4-2", chapter: 4, point: "Describing where things are", type: "fill",
+    sentence: "Say 'There is no book on the desk.'",
+    answer: "つくえのうえにほんがありません。", note: "[place]に [thing]が あります／います describes location。" },
+  { id: "c4-2b", chapter: 4, point: "Describing where things are", type: "fill",
+    sentence: "Say 'There is a cat under the chair.'",
+    answer: "いすのしたにねこがいます。", note: "[place]に [thing]が あります／います describes location。" },
+  { id: "c4-3", chapter: 4, point: "Past tense of です", type: "fill",
+    sentence: "Say 'Yesterday was Monday.'",
+    answer: "きのうはげつようびでした。", note: "です → でした for past tense。" },
+  { id: "c4-3b", chapter: 4, point: "Past tense of です", type: "fill",
+    sentence: "Say 'Yesterday was not Sunday.' (past negative)",
+    answer: "きのうはにちようびじゃありませんでした。", altAnswers: ["きのうはにちようびじゃなかったです。"],
+    note: "です → じゃありませんでした for past negative。" },
+  { id: "c4-4", chapter: 4, point: "Past tense of verbs", type: "fill",
+    sentence: "Conjugate たべます into the past tense.",
+    answer: "たべました", note: "ます → ました for the polite past。" },
+  { id: "c4-4b", chapter: 4, point: "Past tense of verbs", type: "fill",
+    sentence: "Conjugate たべます into the past negative.",
+    answer: "たべませんでした", note: "ます → ませんでした for the polite past negative。" },
+  { id: "c4-5", chapter: 4, point: "と (and／with)", type: "translate", dir: "jp-en",
+    sentence: "わたしはともだちとえいがをみました。",
+    translation: "I watched a movie with a friend.", note: "と marks a companion — 'with' someone。" },
+  { id: "c4-5b", chapter: 4, point: "と (and／with)", type: "translate", dir: "jp-en",
+    sentence: "こどもとこうえんへいきました。",
+    translation: "I went to the park with a child.", note: "と marks a companion — 'with' someone。" },
+  { id: "c4-6", chapter: 4, point: "一時間 (duration)", type: "translate", dir: "en-jp",
+    sentence: "I studied for one hour.",
+    translation: "いちじかんべんきょうしました。",
+    note: "Duration words like 一時間 take no particle, unlike specific clock times which take に。" },
+  { id: "c4-6b", chapter: 4, point: "一時間 (duration)", type: "translate", dir: "en-jp",
+    sentence: "I waited for two hours.",
+    translation: "にじかんまちました。", note: "Duration words take no particle。" },
+  { id: "c4-7", chapter: 4, point: "たくさん", type: "translate", dir: "en-jp",
+    sentence: "I have a lot of books.",
+    translation: "ほんがたくさんあります。", note: "たくさん (a lot) usually sits right before the verb。" },
+  { id: "c4-7b", chapter: 4, point: "たくさん", type: "translate", dir: "jp-en",
+    sentence: "ともだちがたくさんいます。",
+    translation: "I have a lot of friends.", note: "たくさん (a lot) usually sits right before the verb。" },
+  { id: "c4-8", chapter: 4, point: "も (emphatic quantity)", type: "fill",
+    sentence: "Say 'I waited for as long as two hours.' (emphasizing it was a lot)",
+    answer: "にじかんもまちました。", note: "[quantity／duration]＋も can emphasize 'as much／long as'。" },
+  { id: "c4-8b", chapter: 4, point: "も (emphatic quantity)", type: "fill",
+    sentence: "Say 'I studied for as long as three hours.'",
+    answer: "さんじかんもべんきょうしました。", note: "[quantity／duration]＋も can emphasize 'as much／long as'。" },
+
+  { id: "c5-1", chapter: 5, point: "Adjectives (present tense)", type: "fill",
+    sentence: "Say 'This book is expensive.'",
+    answer: "このほんはたかいです。", note: "い-adjectives attach directly to です。" },
+  { id: "c5-1b", chapter: 5, point: "Adjectives (present tense)", type: "fill",
+    sentence: "Say 'This coffee is hot.'",
+    answer: "このコーヒーはあついです。", note: "い-adjectives attach directly to です。" },
+  { id: "c5-2", chapter: 5, point: "Adjectives (past tense)", type: "fill",
+    sentence: "Conjugate たかいです into the past tense.",
+    answer: "たかかったです", note: "い-adj past: drop い, add かった。" },
+  { id: "c5-2b", chapter: 5, point: "Adjectives (past tense)", type: "fill",
+    sentence: "Conjugate たかいです into the present negative.",
+    answer: "たかくないです", altAnswers: ["たかくありません"],
+    note: "い-adj negative: drop い, add くない。" },
+  { id: "c5-3", chapter: 5, point: "Adjectives (noun modification)", type: "mc",
+    sentence: "＿＿＿ ほんをかいました。(bought an expensive book)", answer: "たかい",
+    options: ["たかい", "たかいの", "たかくて", "たかかった"],
+    translation: "I bought an expensive book.", note: "い-adjectives modify nouns directly, in their plain form。" },
+  { id: "c5-3b", chapter: 5, point: "Adjectives (noun modification)", type: "mc",
+    sentence: "＿＿＿ たべものをたべました。(ate delicious food)", answer: "おいしい",
+    options: ["おいしい", "おいしいの", "おいしくて", "おいしかった"],
+    translation: "I ate delicious food.", note: "い-adjectives modify nouns directly, in their plain form。" },
+  { id: "c5-4", chapter: 5, point: "好き（な）／きらい（な）", type: "mc",
+    sentence: "わたしは おんがく＿すきです。", answer: "が",
+    options: ["が", "を", "は", "に"],
+    translation: "I like music.", note: "すき・きらい take が for the thing liked／disliked。" },
+  { id: "c5-4b", chapter: 5, point: "好き（な）／きらい（な）", type: "translate", dir: "en-jp",
+    sentence: "I dislike tests.",
+    translation: "テストがきらいです。", note: "すき・きらい take が for the thing liked／disliked。" },
+  { id: "c5-5", chapter: 5, point: "～ましょう／～ましょうか", type: "fill",
+    sentence: "Propose 'Let's go together.'",
+    answer: "いっしょにいきましょう。", note: "ましょう proposes an action together。" },
+  { id: "c5-5b", chapter: 5, point: "～ましょう／～ましょうか", type: "fill",
+    sentence: "Propose 'Shall we swim?'",
+    answer: "およぎましょうか。", note: "ましょうか softly proposes an action together。" },
+  { id: "c5-6", chapter: 5, point: "Counting", type: "fill",
+    sentence: "Ask for two photos. (しゃしん＝photo, にまい＝2 flat objects)",
+    answer: "しゃしんをにまいください。", note: "枚 (まい) counts flat objects like photos or paper。" },
+  { id: "c5-6b", chapter: 5, point: "Counting", type: "fill",
+    sentence: "Ask for three photos. (さんまい＝3 flat objects)",
+    answer: "しゃしんをさんまいください。", note: "枚 (まい) counts flat objects like photos or paper。" },
+
+  { id: "c6-1", chapter: 6, point: "Te-form (る-verb)", type: "fill",
+    sentence: "Conjugate たべる (to eat) into the て-form.",
+    answer: "たべて", note: "る-verbs: drop る, add て。" },
+  { id: "c6-1b", chapter: 6, point: "Te-form (る-verb)", type: "fill",
+    sentence: "Conjugate しめる (to close) into the て-form.",
+    answer: "しめて", note: "る-verbs: drop る, add て。" },
+  { id: "c6-2", chapter: 6, point: "Te-form (う-verb, く→いて)", type: "fill",
+    sentence: "Conjugate かく (to write) into the て-form.",
+    answer: "かいて", note: "く → いて。" },
+  { id: "c6-2b", chapter: 6, point: "Te-form (う-verb, く→いて)", type: "fill",
+    sentence: "Conjugate きく (to listen) into the て-form.",
+    answer: "きいて", note: "く → いて。" },
+  { id: "c6-3", chapter: 6, point: "Te-form (う-verb, う／つ／る→って)", type: "fill",
+    sentence: "Conjugate まつ (to wait) into the て-form.",
+    answer: "まって", note: "う／つ／る → って。" },
+  { id: "c6-3b", chapter: 6, point: "Te-form (う-verb, う／つ／る→って)", type: "fill",
+    sentence: "Conjugate かう (to buy) into the て-form.",
+    answer: "かって", note: "う／つ／る → って。" },
+  { id: "c6-4", chapter: 6, point: "～てください", type: "translate", dir: "en-jp",
+    sentence: "Please wait a little.",
+    translation: "ちょっとまってください。", note: "[て-form]＋ください = please do X。" },
+  { id: "c6-4b", chapter: 6, point: "～てください", type: "translate", dir: "en-jp",
+    sentence: "Please open the window.",
+    translation: "まどをあけてください。", note: "[て-form]＋ください = please do X。" },
+  { id: "c6-5", chapter: 6, point: "Describing two activities", type: "translate", dir: "jp-en",
+    sentence: "あさごはんをたべて、がっこうへいきます。",
+    translation: "I eat breakfast, and (then) go to school.",
+    note: "The te-form links two verbs describing a sequence of actions。" },
+  { id: "c6-5b", chapter: 6, point: "Describing two activities", type: "translate", dir: "jp-en",
+    sentence: "しゅくだいをして、ねます。",
+    translation: "I do homework, and (then) go to sleep.",
+    note: "The te-form links two verbs describing a sequence of actions。" },
+  { id: "c6-6", chapter: 6, point: "～てもいいです", type: "mc",
+    sentence: "ここで しゃしんを とって＿＿＿。(may I...?)", answer: "もいいですか",
+    options: ["もいいですか", "はいけません", "います", "ください"],
+    translation: "May I take a photo here?", note: "[て-form]＋もいいですか = asking permission。" },
+  { id: "c6-6b", chapter: 6, point: "～てもいいです", type: "translate", dir: "jp-en",
+    sentence: "でんきをつけてもいいですか。",
+    translation: "Is it okay to turn on the light?", note: "[て-form]＋もいいですか = asking permission。" },
+  { id: "c6-7", chapter: 6, point: "～てはいけません", type: "translate", dir: "jp-en",
+    sentence: "としょかんではなしてはいけません。",
+    translation: "You must not talk in the library.", note: "[て-form]＋はいけません = prohibition。" },
+  { id: "c6-7b", chapter: 6, point: "～てはいけません", type: "translate", dir: "jp-en",
+    sentence: "ここでたばこをすってはいけません。",
+    translation: "You must not smoke here.", note: "[て-form]＋はいけません = prohibition。" },
+  { id: "c6-8", chapter: 6, point: "～から (because)", type: "translate", dir: "jp-en",
+    sentence: "さむいですから、まどをしめてください。",
+    translation: "Because it's cold, please close the window.",
+    note: "から attaches to the reason clause, which comes first。" },
+  { id: "c6-8b", chapter: 6, point: "～から (because)", type: "translate", dir: "jp-en",
+    sentence: "いそがしいですから、てつだってください。",
+    translation: "Because I'm busy, please help me.",
+    note: "から attaches to the reason clause, which comes first。" },
+  { id: "c6-9", chapter: 6, point: "～ましょうか (offering assistance)", type: "fill",
+    sentence: "Offer to help: 'Shall I help you?'",
+    answer: "てつだいましょうか。", note: "ましょうか here offers to do something FOR the listener。" },
+  { id: "c6-9b", chapter: 6, point: "～ましょうか (offering assistance)", type: "fill",
+    sentence: "Offer 'Shall I carry your bag?'",
+    answer: "かばんをもちましょうか。", note: "ましょうか here offers to do something FOR the listener。" },
+
+  { id: "c7-1", chapter: 7, point: "～ている (action in progress)", type: "fill",
+    sentence: "今、しゅくだいをして＿＿＿。(is doing homework right now)",
+    answer: "います", note: "[て-form]＋いる／います = an action happening right now。" },
+  { id: "c7-1b", chapter: 7, point: "～ている (action in progress)", type: "fill",
+    sentence: "テレビを みて＿＿＿。(is watching TV right now)",
+    answer: "います", note: "[て-form]＋いる／います = an action happening right now。" },
+  { id: "c7-2", chapter: 7, point: "～ている (result of a change)", type: "translate", dir: "jp-en",
+    sentence: "けっこんしています。",
+    translation: "I am married.",
+    note: "Here ている shows the ongoing RESULT of a completed change, not an action in progress。" },
+  { id: "c7-2b", chapter: 7, point: "～ている (result of a change)", type: "translate", dir: "jp-en",
+    sentence: "しっています。",
+    translation: "I know (it).",
+    note: "しっている describes an ongoing state resulting from having learned something。" },
+  { id: "c7-3", chapter: 7, point: "Xは Yが Z (double particle)", type: "translate", dir: "jp-en",
+    sentence: "たなかさんはめがおおきいです。",
+    translation: "Mr./Ms. Tanaka has big eyes.",
+    note: "[whole]は [part]が [description] — describes a feature of the topic。" },
+  { id: "c7-3b", chapter: 7, point: "Xは Yが Z (double particle)", type: "translate", dir: "jp-en",
+    sentence: "たなかさんはかみがながいです。",
+    translation: "Mr./Ms. Tanaka has long hair.",
+    note: "[whole]は [part]が [description] — describes a feature of the topic。" },
+  { id: "c7-4", chapter: 7, point: "Adjective／noun te-forms for joining sentences", type: "fill",
+    sentence: "Join these using the て-form of やすい: このほんはやすいです。あのほんはたかいです。",
+    answer: "このほんはやすくて、あのほんはたかいです。",
+    note: "い-adjective te-form: drop い, add くて。" },
+  { id: "c7-4b", chapter: 7, point: "Adjective／noun te-forms for joining sentences", type: "fill",
+    sentence: "Join these using the て-form of しずか: このへやはしずかです。あのへやはにぎやかです。",
+    answer: "このへやはしずかで、あのへやはにぎやかです。",
+    note: "な-adjective／noun te-form: だ → で。" },
+  { id: "c7-5", chapter: 7, point: "Verb stem＋に行く", type: "translate", dir: "en-jp",
+    sentence: "I'm going to the library to study.",
+    translation: "としょかんへべんきょうにいきます。",
+    note: "[verb stem]＋に行く = go (somewhere) in order to do X。" },
+  { id: "c7-5b", chapter: 7, point: "Verb stem＋に行く", type: "translate", dir: "en-jp",
+    sentence: "I'm going to the department store to shop.",
+    translation: "デパートへかいものにいきます。",
+    note: "[verb stem]＋に行く = go (somewhere) in order to do X。" },
+  { id: "c7-6", chapter: 7, point: "Counting people", type: "fill",
+    sentence: "Say 'There are three students at the university.' (さんにん＝3 people)",
+    answer: "だいがくにがくせいがさんにんいます。", note: "人 (にん) counts people — with exceptions ひとり／ふたり for 1／2。" },
+  { id: "c7-6b", chapter: 7, point: "Counting people", type: "fill",
+    sentence: "Say 'There are two teachers at the university.' (ふたり＝2 people)",
+    answer: "だいがくにせんせいがふたりいます。", note: "1 and 2 people are irregular: ひとり／ふたり, not いちにん／ににん。" },
+];
+
+const CHAPTER_TITLES = {
+  1: "Xは Yです・の・か", 2: "これ／それ／あれ・だれの・も", 3: "Verb conjugation・ませんか・は",
+  4: "あります／います・past tense", 5: "Adjectives・すき／きらい", 6: "て-form・てください・から",
+  7: "ている・joining sentences・に行く",
+};
+
+const VOCAB_ITEMS = [
+  { id: "v1-1", chapter: 1, jp: "だいがく", en: "college; university" },
+  { id: "v1-2", chapter: 1, jp: "こうこう", en: "high school" },
+  { id: "v1-3", chapter: 1, jp: "がくせい", en: "student" },
+  { id: "v1-4", chapter: 1, jp: "だいがくせい", en: "college student" },
+  { id: "v1-5", chapter: 1, jp: "りゅうがくせい", en: "international student" },
+  { id: "v1-6", chapter: 1, jp: "せんせい", en: "teacher; professor" },
+  { id: "v1-7", chapter: 1, jp: "いちねんせい", en: "first-year student" },
+  { id: "v1-8", chapter: 1, jp: "せんこう", en: "major" },
+  { id: "v1-9", chapter: 1, jp: "わたし", en: "I" },
+  { id: "v1-10", chapter: 1, jp: "ともだち", en: "friend" },
+  { id: "v1-11", chapter: 1, jp: "にほんじん", en: "Japanese people" },
+  { id: "v1-12", chapter: 1, jp: "いま", en: "now" },
+  { id: "v1-13", chapter: 1, jp: "ごぜん", en: "A.M." },
+  { id: "v1-14", chapter: 1, jp: "ごご", en: "P.M." },
+  { id: "v1-15", chapter: 1, jp: "いちじ", en: "one o'clock" },
+  { id: "v1-16", chapter: 1, jp: "はん", en: "half" },
+  { id: "v1-17", chapter: 1, jp: "にじはん", en: "half past two" },
+  { id: "v1-18", chapter: 1, jp: "にほん", en: "Japan" },
+  { id: "v1-19", chapter: 1, jp: "アメリカ", en: "USA" },
+  { id: "v1-20", chapter: 1, jp: "にほんご", en: "Japanese language" },
+  { id: "v1-21", chapter: 1, jp: "さい", en: "…years old" },
+  { id: "v1-22", chapter: 1, jp: "でんわ", en: "telephone" },
+  { id: "v1-23", chapter: 1, jp: "ばんごう", en: "number" },
+  { id: "v1-24", chapter: 1, jp: "なまえ", en: "name" },
+  { id: "v1-25", chapter: 1, jp: "なん", en: "what" },
+  { id: "v1-26", chapter: 1, jp: "あのう", en: "um…" },
+  { id: "v1-27", chapter: 1, jp: "はい", en: "yes" },
+  { id: "v1-28", chapter: 1, jp: "そうです", en: "That's right" },
+  { id: "v1-29", chapter: 1, jp: "そうですか", en: "I see; Is that so?" },
+  { id: "v1-30", chapter: 1, jp: "イギリス", en: "Britain" },
+  { id: "v1-31", chapter: 1, jp: "アジアけんきょう", en: "Asian studies (major)" },
+  { id: "v1-32", chapter: 1, jp: "けいざい", en: "economics (major)" },
+  { id: "v1-33", chapter: 1, jp: "こうがく", en: "engineering (major)" },
+  { id: "v1-34", chapter: 1, jp: "こくさいかんけい", en: "international relations (major)" },
+  { id: "v1-35", chapter: 1, jp: "せいじ", en: "politics (major)" },
+  { id: "v1-36", chapter: 1, jp: "せいぶつがく", en: "biology (major)" },
+  { id: "v1-37", chapter: 1, jp: "ビジネス", en: "business (major)" },
+  { id: "v1-38", chapter: 1, jp: "ぶんがく", en: "literature (major)" },
+  { id: "v1-39", chapter: 1, jp: "れきし", en: "history (major)" },
+  { id: "v1-40", chapter: 1, jp: "いしゃ", en: "doctor" },
+  { id: "v1-41", chapter: 1, jp: "かんごし", en: "nurse" },
+  { id: "v1-42", chapter: 1, jp: "こうこうせい", en: "high school student" },
+  { id: "v1-43", chapter: 1, jp: "しゅふ", en: "housewife" },
+  { id: "v1-44", chapter: 1, jp: "だいがくいんせい", en: "graduate student" },
+  { id: "v1-45", chapter: 1, jp: "べんごし", en: "lawyer" },
+  { id: "v1-46", chapter: 1, jp: "おかあさん", en: "mother" },
+  { id: "v1-47", chapter: 1, jp: "おとうさん", en: "father" },
+  { id: "v1-48", chapter: 1, jp: "おねえさん", en: "older sister" },
+  { id: "v1-49", chapter: 1, jp: "おにいさん", en: "older brother" },
+  { id: "v1-50", chapter: 1, jp: "いもうと", en: "younger sister" },
+  { id: "v1-51", chapter: 1, jp: "おとうと", en: "younger brother" },
+  { id: "v1-52", chapter: 1, jp: "かいしゃいん", en: "office worker" },
+
+  { id: "v2-1", chapter: 2, jp: "これ", en: "this one" },
+  { id: "v2-2", chapter: 2, jp: "それ", en: "that one" },
+  { id: "v2-3", chapter: 2, jp: "あれ", en: "that one (over there)" },
+  { id: "v2-4", chapter: 2, jp: "どれ", en: "which one" },
+  { id: "v2-5", chapter: 2, jp: "この", en: "this…" },
+  { id: "v2-6", chapter: 2, jp: "その", en: "that…" },
+  { id: "v2-7", chapter: 2, jp: "あの", en: "that… (over there)" },
+  { id: "v2-8", chapter: 2, jp: "どの", en: "which…" },
+  { id: "v2-9", chapter: 2, jp: "ここ", en: "here" },
+  { id: "v2-10", chapter: 2, jp: "そこ", en: "there" },
+  { id: "v2-11", chapter: 2, jp: "あそこ", en: "over there" },
+  { id: "v2-12", chapter: 2, jp: "どこ", en: "where" },
+  { id: "v2-13", chapter: 2, jp: "だれ", en: "who" },
+  { id: "v2-14", chapter: 2, jp: "おいしい", en: "delicious" },
+  { id: "v2-15", chapter: 2, jp: "さかな", en: "fish" },
+  { id: "v2-16", chapter: 2, jp: "とんかつ", en: "pork cutlet" },
+  { id: "v2-17", chapter: 2, jp: "にく", en: "meat" },
+  { id: "v2-18", chapter: 2, jp: "メニュー", en: "menu" },
+  { id: "v2-19", chapter: 2, jp: "やさい", en: "vegetable" },
+  { id: "v2-20", chapter: 2, jp: "かさ", en: "umbrella" },
+  { id: "v2-21", chapter: 2, jp: "かばん", en: "bag" },
+  { id: "v2-22", chapter: 2, jp: "くつ", en: "shoes" },
+  { id: "v2-23", chapter: 2, jp: "さいふ", en: "wallet" },
+  { id: "v2-24", chapter: 2, jp: "ジーンズ", en: "jeans" },
+  { id: "v2-25", chapter: 2, jp: "じてんしゃ", en: "bicycle" },
+  { id: "v2-26", chapter: 2, jp: "しんぶん", en: "newspaper" },
+  { id: "v2-27", chapter: 2, jp: "スマホ", en: "smartphone; mobile" },
+  { id: "v2-28", chapter: 2, jp: "とけい", en: "watch; clock" },
+  { id: "v2-29", chapter: 2, jp: "ノート", en: "notebook" },
+  { id: "v2-30", chapter: 2, jp: "ペン", en: "pen" },
+  { id: "v2-31", chapter: 2, jp: "ぼうし", en: "hat; cap" },
+  { id: "v2-32", chapter: 2, jp: "ほん", en: "book" },
+  { id: "v2-33", chapter: 2, jp: "ぎんこう", en: "bank" },
+  { id: "v2-34", chapter: 2, jp: "コンビニ", en: "convenience store" },
+  { id: "v2-35", chapter: 2, jp: "トイレ", en: "toilet; restroom" },
+  { id: "v2-36", chapter: 2, jp: "としょかん", en: "library" },
+  { id: "v2-37", chapter: 2, jp: "ゆうびんきょく", en: "post office" },
+  { id: "v2-38", chapter: 2, jp: "えいご", en: "English (language)" },
+  { id: "v2-39", chapter: 2, jp: "いくら", en: "how much" },
+  { id: "v2-40", chapter: 2, jp: "えん", en: "…yen" },
+  { id: "v2-41", chapter: 2, jp: "たかい", en: "expensive; high" },
+  { id: "v2-42", chapter: 2, jp: "いらっしゃいませ", en: "Welcome (to our store)" },
+  { id: "v2-43", chapter: 2, jp: "おねがいします", en: "…please" },
+  { id: "v2-44", chapter: 2, jp: "ください", en: "Please give me…" },
+  { id: "v2-45", chapter: 2, jp: "じゃあ", en: "then…; if that's the case…" },
+  { id: "v2-46", chapter: 2, jp: "どうぞ", en: "Please; Here it is" },
+  { id: "v2-47", chapter: 2, jp: "どうも", en: "Thank you" },
+
+  { id: "v3-1", chapter: 3, jp: "えいが", en: "movie" },
+  { id: "v3-2", chapter: 3, jp: "おんがく", en: "music" },
+  { id: "v3-3", chapter: 3, jp: "ざっし", en: "magazine" },
+  { id: "v3-4", chapter: 3, jp: "スポーツ", en: "sports" },
+  { id: "v3-5", chapter: 3, jp: "デート", en: "date (romantic)" },
+  { id: "v3-6", chapter: 3, jp: "テニス", en: "tennis" },
+  { id: "v3-7", chapter: 3, jp: "テレビ", en: "TV" },
+  { id: "v3-8", chapter: 3, jp: "アイスクリーム", en: "ice cream" },
+  { id: "v3-9", chapter: 3, jp: "ハンバーガー", en: "hamburger" },
+  { id: "v3-10", chapter: 3, jp: "おさけ", en: "sake; alcoholic drink" },
+  { id: "v3-11", chapter: 3, jp: "おちゃ", en: "green tea" },
+  { id: "v3-12", chapter: 3, jp: "コーヒー", en: "coffee" },
+  { id: "v3-13", chapter: 3, jp: "みず", en: "water" },
+  { id: "v3-14", chapter: 3, jp: "あさごはん", en: "breakfast" },
+  { id: "v3-15", chapter: 3, jp: "ひるごはん", en: "lunch" },
+  { id: "v3-16", chapter: 3, jp: "ばんごはん", en: "dinner" },
+  { id: "v3-17", chapter: 3, jp: "いえ", en: "home; house" },
+  { id: "v3-18", chapter: 3, jp: "うち", en: "home; house; my place" },
+  { id: "v3-19", chapter: 3, jp: "がっこう", en: "school" },
+  { id: "v3-20", chapter: 3, jp: "カフェ", en: "cafe" },
+  { id: "v3-21", chapter: 3, jp: "あした", en: "tomorrow" },
+  { id: "v3-22", chapter: 3, jp: "きょう", en: "today" },
+  { id: "v3-23", chapter: 3, jp: "あさ", en: "morning" },
+  { id: "v3-24", chapter: 3, jp: "こんばん", en: "tonight" },
+  { id: "v3-25", chapter: 3, jp: "まいにち", en: "every day" },
+  { id: "v3-26", chapter: 3, jp: "まいばん", en: "every night" },
+  { id: "v3-27", chapter: 3, jp: "しゅうまつ", en: "weekend" },
+  { id: "v3-28", chapter: 3, jp: "どようび", en: "Saturday" },
+  { id: "v3-29", chapter: 3, jp: "にちようび", en: "Sunday" },
+  { id: "v3-30", chapter: 3, jp: "いつ", en: "when" },
+  { id: "v3-31", chapter: 3, jp: "ごろ", en: "at about…" },
+  { id: "v3-32", chapter: 3, jp: "いく", en: "to go" },
+  { id: "v3-33", chapter: 3, jp: "かえる", en: "to go back; to return" },
+  { id: "v3-34", chapter: 3, jp: "きく", en: "to listen; to hear" },
+  { id: "v3-35", chapter: 3, jp: "のむ", en: "to drink" },
+  { id: "v3-36", chapter: 3, jp: "はなす", en: "to speak; to talk" },
+  { id: "v3-37", chapter: 3, jp: "よむ", en: "to read" },
+  { id: "v3-38", chapter: 3, jp: "おきる", en: "to get up" },
+  { id: "v3-39", chapter: 3, jp: "たべる", en: "to eat" },
+  { id: "v3-40", chapter: 3, jp: "ねる", en: "to sleep; to go to sleep" },
+  { id: "v3-41", chapter: 3, jp: "みる", en: "to see; to look at; to watch" },
+  { id: "v3-42", chapter: 3, jp: "くる", en: "to come" },
+  { id: "v3-43", chapter: 3, jp: "する", en: "to do" },
+  { id: "v3-44", chapter: 3, jp: "べんきょうする", en: "to study" },
+  { id: "v3-45", chapter: 3, jp: "いい", en: "good" },
+  { id: "v3-46", chapter: 3, jp: "はやい", en: "early" },
+  { id: "v3-47", chapter: 3, jp: "あまり", en: "not much (+negative)" },
+  { id: "v3-48", chapter: 3, jp: "ぜんぜん", en: "not at all (+negative)" },
+  { id: "v3-49", chapter: 3, jp: "たいてい", en: "usually" },
+  { id: "v3-50", chapter: 3, jp: "ちょっと", en: "a little" },
+  { id: "v3-51", chapter: 3, jp: "ときどき", en: "sometimes" },
+  { id: "v3-52", chapter: 3, jp: "よく", en: "often; much" },
+  { id: "v3-53", chapter: 3, jp: "そうですね", en: "That's right; Let me see" },
+  { id: "v3-54", chapter: 3, jp: "でも", en: "but" },
+  { id: "v3-55", chapter: 3, jp: "どうですか", en: "How about…?; How is…?" },
+  { id: "v3-56", chapter: 3, jp: "ええ", en: "yes" },
+
+  { id: "v4-1", chapter: 4, jp: "ゲーム", en: "game" },
+  { id: "v4-2", chapter: 4, jp: "アルバイト", en: "part-time job" },
+  { id: "v4-3", chapter: 4, jp: "かいもの", en: "shopping" },
+  { id: "v4-4", chapter: 4, jp: "クラス", en: "class" },
+  { id: "v4-5", chapter: 4, jp: "いぬ", en: "dog" },
+  { id: "v4-6", chapter: 4, jp: "ねこ", en: "cat" },
+  { id: "v4-7", chapter: 4, jp: "ひと", en: "person" },
+  { id: "v4-8", chapter: 4, jp: "こども", en: "child" },
+  { id: "v4-9", chapter: 4, jp: "あなた", en: "you" },
+  { id: "v4-10", chapter: 4, jp: "いす", en: "chair" },
+  { id: "v4-11", chapter: 4, jp: "つくえ", en: "desk" },
+  { id: "v4-12", chapter: 4, jp: "しゃしん", en: "picture; photograph" },
+  { id: "v4-13", chapter: 4, jp: "はな", en: "flower" },
+  { id: "v4-14", chapter: 4, jp: "レポート", en: "(term) paper" },
+  { id: "v4-15", chapter: 4, jp: "ごはん", en: "rice; meal" },
+  { id: "v4-16", chapter: 4, jp: "パン", en: "bread" },
+  { id: "v4-17", chapter: 4, jp: "おてら", en: "temple" },
+  { id: "v4-18", chapter: 4, jp: "こうえん", en: "park" },
+  { id: "v4-19", chapter: 4, jp: "スーパー", en: "supermarket" },
+  { id: "v4-20", chapter: 4, jp: "バスてい", en: "bus stop" },
+  { id: "v4-21", chapter: 4, jp: "びょういん", en: "hospital" },
+  { id: "v4-22", chapter: 4, jp: "ホテル", en: "hotel" },
+  { id: "v4-23", chapter: 4, jp: "まち", en: "town; city" },
+  { id: "v4-24", chapter: 4, jp: "レストラン", en: "restaurant" },
+  { id: "v4-25", chapter: 4, jp: "きのう", en: "yesterday" },
+  { id: "v4-26", chapter: 4, jp: "いちじかん", en: "one hour" },
+  { id: "v4-27", chapter: 4, jp: "せんしゅう", en: "last week" },
+  { id: "v4-28", chapter: 4, jp: "とき", en: "when…; at the time of…" },
+  { id: "v4-29", chapter: 4, jp: "げつようび", en: "Monday" },
+  { id: "v4-30", chapter: 4, jp: "かようび", en: "Tuesday" },
+  { id: "v4-31", chapter: 4, jp: "すいようび", en: "Wednesday" },
+  { id: "v4-32", chapter: 4, jp: "もくようび", en: "Thursday" },
+  { id: "v4-33", chapter: 4, jp: "きんようび", en: "Friday" },
+  { id: "v4-34", chapter: 4, jp: "あう", en: "to meet; to see (a person)" },
+  { id: "v4-35", chapter: 4, jp: "ある", en: "there is… (non-living thing)" },
+  { id: "v4-36", chapter: 4, jp: "かう", en: "to buy" },
+  { id: "v4-37", chapter: 4, jp: "かく", en: "to write" },
+  { id: "v4-38", chapter: 4, jp: "とる", en: "to take (a picture)" },
+  { id: "v4-39", chapter: 4, jp: "まつ", en: "to wait" },
+  { id: "v4-40", chapter: 4, jp: "わかる", en: "to understand" },
+  { id: "v4-41", chapter: 4, jp: "いる", en: "there is… (living thing)" },
+  { id: "v4-42", chapter: 4, jp: "ぐらい", en: "about (approx. amount)" },
+  { id: "v4-43", chapter: 4, jp: "ごめんなさい", en: "I'm sorry" },
+  { id: "v4-44", chapter: 4, jp: "それから", en: "and then" },
+  { id: "v4-45", chapter: 4, jp: "だから", en: "so; therefore" },
+  { id: "v4-46", chapter: 4, jp: "たくさん", en: "many; a lot" },
+  { id: "v4-47", chapter: 4, jp: "と", en: "together with (a person); and" },
+  { id: "v4-48", chapter: 4, jp: "どうして", en: "why" },
+  { id: "v4-49", chapter: 4, jp: "ひとりで", en: "alone" },
+  { id: "v4-50", chapter: 4, jp: "もしもし", en: "Hello? (on the phone)" },
+  { id: "v4-51", chapter: 4, jp: "みぎ", en: "right" },
+  { id: "v4-52", chapter: 4, jp: "ひだり", en: "left" },
+  { id: "v4-53", chapter: 4, jp: "まえ", en: "front" },
+  { id: "v4-54", chapter: 4, jp: "うしろ", en: "back" },
+  { id: "v4-55", chapter: 4, jp: "なか", en: "inside" },
+  { id: "v4-56", chapter: 4, jp: "うえ", en: "on" },
+  { id: "v4-57", chapter: 4, jp: "した", en: "under" },
+  { id: "v4-58", chapter: 4, jp: "ちかく", en: "near; nearby" },
+  { id: "v4-59", chapter: 4, jp: "となり", en: "next (to)" },
+  { id: "v4-60", chapter: 4, jp: "あいだ", en: "between" },
+
+  { id: "v5-1", chapter: 5, jp: "たべもの", en: "food" },
+  { id: "v5-2", chapter: 5, jp: "のみもの", en: "drink" },
+  { id: "v5-3", chapter: 5, jp: "くだもの", en: "fruit" },
+  { id: "v5-4", chapter: 5, jp: "やすみ", en: "holiday; day off; absence" },
+  { id: "v5-5", chapter: 5, jp: "りょこう", en: "travel; trip" },
+  { id: "v5-6", chapter: 5, jp: "うみ", en: "sea" },
+  { id: "v5-7", chapter: 5, jp: "サーフィン", en: "surfing" },
+  { id: "v5-8", chapter: 5, jp: "おみやげ", en: "souvenir" },
+  { id: "v5-9", chapter: 5, jp: "バス", en: "bus" },
+  { id: "v5-10", chapter: 5, jp: "てんき", en: "weather" },
+  { id: "v5-11", chapter: 5, jp: "しゅくだい", en: "homework" },
+  { id: "v5-12", chapter: 5, jp: "テスト", en: "test" },
+  { id: "v5-13", chapter: 5, jp: "たんじょうび", en: "birthday" },
+  { id: "v5-14", chapter: 5, jp: "へや", en: "room" },
+  { id: "v5-15", chapter: 5, jp: "ぼく", en: "I (used by men)" },
+  { id: "v5-16", chapter: 5, jp: "あたらしい", en: "new" },
+  { id: "v5-17", chapter: 5, jp: "ふるい", en: "old (things)" },
+  { id: "v5-18", chapter: 5, jp: "あつい", en: "hot" },
+  { id: "v5-19", chapter: 5, jp: "さむい", en: "cold" },
+  { id: "v5-20", chapter: 5, jp: "いそがしい", en: "busy" },
+  { id: "v5-21", chapter: 5, jp: "おおきい", en: "large" },
+  { id: "v5-22", chapter: 5, jp: "ちいさい", en: "small" },
+  { id: "v5-23", chapter: 5, jp: "おもしろい", en: "interesting; funny" },
+  { id: "v5-24", chapter: 5, jp: "つまらない", en: "boring" },
+  { id: "v5-25", chapter: 5, jp: "やさしい", en: "easy (problem); kind (person)" },
+  { id: "v5-26", chapter: 5, jp: "むずかしい", en: "difficult" },
+  { id: "v5-27", chapter: 5, jp: "かっこいい", en: "good-looking; cool" },
+  { id: "v5-28", chapter: 5, jp: "こわい", en: "frightening" },
+  { id: "v5-29", chapter: 5, jp: "たのしい", en: "fun" },
+  { id: "v5-30", chapter: 5, jp: "やすい", en: "inexpensive; cheap" },
+  { id: "v5-31", chapter: 5, jp: "すき", en: "fond of; to like" },
+  { id: "v5-32", chapter: 5, jp: "きらい", en: "disgusted with; to dislike" },
+  { id: "v5-33", chapter: 5, jp: "だいすき", en: "very fond of; to love" },
+  { id: "v5-34", chapter: 5, jp: "だいきらい", en: "to hate" },
+  { id: "v5-35", chapter: 5, jp: "きれい", en: "beautiful; clean" },
+  { id: "v5-36", chapter: 5, jp: "げんき", en: "healthy; energetic" },
+  { id: "v5-37", chapter: 5, jp: "しずか", en: "quiet" },
+  { id: "v5-38", chapter: 5, jp: "にぎやか", en: "lively" },
+  { id: "v5-39", chapter: 5, jp: "ひま", en: "not busy; free (time)" },
+  { id: "v5-40", chapter: 5, jp: "およぐ", en: "to swim" },
+  { id: "v5-41", chapter: 5, jp: "のる", en: "to ride; to board" },
+  { id: "v5-42", chapter: 5, jp: "やる", en: "to do; to perform" },
+  { id: "v5-43", chapter: 5, jp: "でかける", en: "to go out" },
+  { id: "v5-44", chapter: 5, jp: "いっしょに", en: "together" },
+  { id: "v5-45", chapter: 5, jp: "すごく", en: "extremely" },
+  { id: "v5-46", chapter: 5, jp: "だいじょうぶ", en: "It's okay; Not to worry" },
+  { id: "v5-47", chapter: 5, jp: "とても", en: "very" },
+  { id: "v5-48", chapter: 5, jp: "どんな", en: "what kind of…" },
+
+  { id: "v6-1", chapter: 6, jp: "かんじ", en: "kanji" },
+  { id: "v6-2", chapter: 6, jp: "きょうかしょ", en: "textbook" },
+  { id: "v6-3", chapter: 6, jp: "ページ", en: "page" },
+  { id: "v6-4", chapter: 6, jp: "つぎ", en: "next" },
+  { id: "v6-5", chapter: 6, jp: "おかね", en: "money" },
+  { id: "v6-6", chapter: 6, jp: "にもつ", en: "baggage" },
+  { id: "v6-7", chapter: 6, jp: "パソコン", en: "personal computer" },
+  { id: "v6-8", chapter: 6, jp: "シャワー", en: "shower" },
+  { id: "v6-9", chapter: 6, jp: "エアコン", en: "air conditioner" },
+  { id: "v6-10", chapter: 6, jp: "でんき", en: "electricity; light" },
+  { id: "v6-11", chapter: 6, jp: "まど", en: "window" },
+  { id: "v6-12", chapter: 6, jp: "でんしゃ", en: "train" },
+  { id: "v6-13", chapter: 6, jp: "くに", en: "country; place of origin" },
+  { id: "v6-14", chapter: 6, jp: "こんしゅう", en: "this week" },
+  { id: "v6-15", chapter: 6, jp: "らいしゅう", en: "next week" },
+  { id: "v6-16", chapter: 6, jp: "らいねん", en: "next year" },
+  { id: "v6-17", chapter: 6, jp: "よる", en: "night" },
+  { id: "v6-18", chapter: 6, jp: "たいへん", en: "tough (situation)" },
+  { id: "v6-19", chapter: 6, jp: "あそぶ", en: "to play; to spend time pleasantly" },
+  { id: "v6-20", chapter: 6, jp: "いそぐ", en: "to hurry" },
+  { id: "v6-21", chapter: 6, jp: "かえす", en: "to return (a thing)" },
+  { id: "v6-22", chapter: 6, jp: "けす", en: "to turn off; to erase" },
+  { id: "v6-23", chapter: 6, jp: "しぬ", en: "to die" },
+  { id: "v6-24", chapter: 6, jp: "すわる", en: "to sit down" },
+  { id: "v6-25", chapter: 6, jp: "たつ", en: "to stand up" },
+  { id: "v6-26", chapter: 6, jp: "たばこをすう", en: "to smoke" },
+  { id: "v6-27", chapter: 6, jp: "つかう", en: "to use" },
+  { id: "v6-28", chapter: 6, jp: "てつだう", en: "to help" },
+  { id: "v6-29", chapter: 6, jp: "はいる", en: "to enter" },
+  { id: "v6-30", chapter: 6, jp: "もつ", en: "to carry; to hold" },
+  { id: "v6-31", chapter: 6, jp: "やすむ", en: "to be absent; to rest" },
+  { id: "v6-32", chapter: 6, jp: "あける", en: "to open" },
+  { id: "v6-33", chapter: 6, jp: "しめる", en: "to close" },
+  { id: "v6-34", chapter: 6, jp: "おしえる", en: "to teach; to instruct" },
+  { id: "v6-35", chapter: 6, jp: "わすれる", en: "to forget; to leave behind" },
+  { id: "v6-36", chapter: 6, jp: "おりる", en: "to get off" },
+  { id: "v6-37", chapter: 6, jp: "かりる", en: "to borrow" },
+  { id: "v6-38", chapter: 6, jp: "シャワーをあびる", en: "to take a shower" },
+  { id: "v6-39", chapter: 6, jp: "つける", en: "to turn on" },
+  { id: "v6-40", chapter: 6, jp: "でんわする", en: "to call" },
+  { id: "v6-41", chapter: 6, jp: "つれてくる", en: "to bring (a person)" },
+  { id: "v6-42", chapter: 6, jp: "もってくる", en: "to bring (a thing)" },
+  { id: "v6-43", chapter: 6, jp: "あとで", en: "later on" },
+  { id: "v6-44", chapter: 6, jp: "すぐ", en: "right away" },
+  { id: "v6-45", chapter: 6, jp: "ゆっくり", en: "slowly; leisurely; unhurriedly" },
+  { id: "v6-46", chapter: 6, jp: "けっこうです", en: "That would be fine; That wouldn't be necessary" },
+  { id: "v6-47", chapter: 6, jp: "ほんとうですか", en: "Really?" },
+  { id: "v6-48", chapter: 6, jp: "まがる", en: "to turn (direction)" },
+  { id: "v6-49", chapter: 6, jp: "わたる", en: "to cross" },
+
+  { id: "v7-1", chapter: 7, jp: "かぞく", en: "family" },
+  { id: "v7-2", chapter: 7, jp: "おじいさん", en: "grandfather; old man" },
+  { id: "v7-3", chapter: 7, jp: "おばあさん", en: "grandmother; old woman" },
+  { id: "v7-4", chapter: 7, jp: "ちち", en: "(my) father" },
+  { id: "v7-5", chapter: 7, jp: "はは", en: "(my) mother" },
+  { id: "v7-6", chapter: 7, jp: "あに", en: "(my) older brother" },
+  { id: "v7-7", chapter: 7, jp: "あね", en: "(my) older sister" },
+  { id: "v7-8", chapter: 7, jp: "きょうだい", en: "brothers and sisters" },
+  { id: "v7-9", chapter: 7, jp: "かいしゃ", en: "company" },
+  { id: "v7-10", chapter: 7, jp: "おんなのひと", en: "woman" },
+  { id: "v7-11", chapter: 7, jp: "おとこのひと", en: "man" },
+  { id: "v7-12", chapter: 7, jp: "め", en: "eye" },
+  { id: "v7-13", chapter: 7, jp: "くち", en: "mouth" },
+  { id: "v7-14", chapter: 7, jp: "かみ", en: "hair" },
+  { id: "v7-15", chapter: 7, jp: "デパート", en: "department store" },
+  { id: "v7-16", chapter: 7, jp: "しょくどう", en: "cafeteria; dining commons" },
+  { id: "v7-17", chapter: 7, jp: "めがね", en: "glasses" },
+  { id: "v7-18", chapter: 7, jp: "ふとる", en: "to gain weight; to be on the heavy side" },
+  { id: "v7-19", chapter: 7, jp: "やせる", en: "to lose weight; to be thin" },
+  { id: "v7-20", chapter: 7, jp: "しっている", en: "to know" },
+  { id: "v7-21", chapter: 7, jp: "はたらく", en: "to work" },
+  { id: "v7-22", chapter: 7, jp: "ながい", en: "long" },
+  { id: "v7-23", chapter: 7, jp: "みじかい", en: "short (length)" },
+  { id: "v7-24", chapter: 7, jp: "せがたかい", en: "tall (stature)" },
+  { id: "v7-25", chapter: 7, jp: "せがひくい", en: "short (stature)" },
+  { id: "v7-26", chapter: 7, jp: "あたまがいい", en: "bright; smart; clever" },
+  { id: "v7-27", chapter: 7, jp: "かわいい", en: "cute" },
+  { id: "v7-28", chapter: 7, jp: "ひとり", en: "one person" },
+  { id: "v7-29", chapter: 7, jp: "ふたり", en: "two people" },
+  { id: "v7-30", chapter: 7, jp: "けっこんする", en: "to get married" },
+  { id: "v7-31", chapter: 7, jp: "サークル", en: "club activity" },
+  { id: "v7-32", chapter: 7, jp: "うた", en: "song" },
+  { id: "v7-33", chapter: 7, jp: "だれも", en: "nobody (+negative)" },
+  { id: "v7-34", chapter: 7, jp: "なにも", en: "not…anything (+negative)" },
+];
+
+const VOCAB_CHAPTER_TITLES = {
+  1: "あたらしいともだち — New Friends", 2: "かいもの — Shopping", 3: "デートの約束 — Making a Date",
+  4: "初めてのデート — The First Date", 5: "沖縄旅行 — A Trip to Okinawa",
+  6: "ロバートさんの一日 — A Day in Robert's Life", 7: "家族の写真 — Family Picture",
+};
+
+const UPCOMING_CHAPTERS = [8, 9, 10, 11, 12];
+const SESSION_SIZE_OPTIONS = [10, 20, 30, "all"];
+
+const normalizeJP = (s) =>
+  (s || "").replace(/[。、！？\s]/g, "")
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).trim();
+
+const shuffle = (arr) => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+const sampleN = (arr, n) => shuffle(arr).slice(0, n);
+
+const weightedTake = (items, weightFn, n) => {
+  const keyed = items.map((it) => ({ it, key: Math.pow(Math.random(), 1 / Math.max(weightFn(it), 0.05)) }));
+  keyed.sort((a, b) => b.key - a.key);
+  return keyed.slice(0, n).map((k) => k.it);
+};
+
+const priorityWeight = (id, stats) => {
+  const s = stats[id];
+  if (!s || s.total === 0) return 6;
+  if (s.lastResult === "incorrect") return 5;
+  const acc = s.correct / s.total;
+  if (acc < 0.5) return 4;
+  if (acc < 0.8) return 2;
+  return 1;
+};
+
+// Turns a vocab word into a quiz item shaped just like a grammar item.
+const buildVocabQuizItem = (word, type, pool) => {
+  const base = { id: word.id, chapter: word.chapter, point: `Lesson ${word.chapter} vocabulary` };
+  if (type === "mc") {
+    const dir = Math.random() < 0.5 ? "jp-en" : "en-jp";
+    if (dir === "jp-en") {
+      const distractors = sampleN(pool.filter((w) => w.id !== word.id && w.en !== word.en), 3).map((w) => w.en);
+      return { ...base, type: "mc", sentence: `What does「${word.jp}」mean?`, answer: word.en, options: shuffle([word.en, ...distractors]) };
+    }
+    const distractors = sampleN(pool.filter((w) => w.id !== word.id && w.jp !== word.jp), 3).map((w) => w.jp);
+    return { ...base, type: "mc", sentence: `Which word means "${word.en}"?`, answer: word.jp, options: shuffle([word.jp, ...distractors]) };
+  }
+  if (type === "fill") {
+    return { ...base, type: "fill", sentence: `Write the Japanese word for: "${word.en}"`, answer: word.jp };
+  }
+  return { ...base, type: "translate", dir: "jp-en", sentence: word.jp, translation: word.en };
+};
+
+// Grammar items store mc options in a fixed order (answer always
+// listed first in the data for readability) — shuffle them fresh
+// every time a queue is built so the position is never a giveaway.
+const prepGrammarItem = (item) =>
+  item.type === "mc" ? { ...item, options: shuffle(item.options) } : item;
+
+const GRAMMAR_STATS_KEY = "genki-dojo-item-stats-v3";
+const VOCAB_STATS_KEY = "genki-dojo-vocab-stats-v1";
+const loadStats = (key) => {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+};
+const saveStats = (key, stats) => {
+  try { window.localStorage.setItem(key, JSON.stringify(stats)); } catch (e) { /* best effort */ }
+};
+
+function App() {
+  const [mode, setMode] = useState("grammar");
+  const [screen, setScreen] = useState("setup");
+  const [selectedChapters, setSelectedChapters] = useState(new Set([1, 2, 3]));
+  const [selectedTypes, setSelectedTypes] = useState(new Set(["mc", "fill", "translate"]));
+  const [sessionSize, setSessionSize] = useState(20);
+  const [queue, setQueue] = useState([]);
+  const [idx, setIdx] = useState(0);
+  const [score, setScore] = useState({ correct: 0, total: 0 });
+  const [grammarStats, setGrammarStats] = useState(() => loadStats(GRAMMAR_STATS_KEY));
+  const [vocabStats, setVocabStats] = useState(() => loadStats(VOCAB_STATS_KEY));
+
+  const [selectedOpt, setSelectedOpt] = useState(null);
+  const [textInput, setTextInput] = useState("");
+  const [revealed, setRevealed] = useState(false);
+  const [verdict, setVerdict] = useState(null);
+
+  const isGrammar = mode === "grammar";
+  const chapterTitles = isGrammar ? CHAPTER_TITLES : VOCAB_CHAPTER_TITLES;
+  const stats = isGrammar ? grammarStats : vocabStats;
+
+  const rawPool = useMemo(
+    () => (isGrammar ? GRAMMAR_ITEMS : VOCAB_ITEMS).filter((it) => selectedChapters.has(it.chapter)),
+    [isGrammar, selectedChapters]
+  );
+  const pool = isGrammar ? rawPool.filter((it) => selectedTypes.has(it.type)) : rawPool;
+
+  const chapterAccuracy = useMemo(() => {
+    const acc = {};
+    const source = isGrammar ? GRAMMAR_ITEMS : VOCAB_ITEMS;
+    for (const n of Object.keys(chapterTitles).map(Number)) {
+      const items = source.filter((it) => it.chapter === n);
+      let correct = 0, total = 0;
+      for (const it of items) {
+        const s = stats[it.id];
+        if (s) { correct += s.correct; total += s.total; }
+      }
+      acc[n] = total ? Math.round((correct / total) * 100) : null;
+    }
+    return acc;
+  }, [isGrammar, stats, chapterTitles]);
+
+  const switchMode = (m) => { setMode(m); setScreen("setup"); };
+
+  const startQuiz = () => {
+    const n = sessionSize === "all" ? pool.length : Math.min(sessionSize, pool.length);
+    if (isGrammar) {
+      const picked = weightedTake(pool, (it) => priorityWeight(it.id, stats), n).map(prepGrammarItem);
+      setQueue(picked);
+    } else {
+      const words = weightedTake(rawPool, (w) => priorityWeight(w.id, stats), n);
+      const typesArr = Array.from(selectedTypes);
+      const picked = words.map((w) => buildVocabQuizItem(w, typesArr[Math.floor(Math.random() * typesArr.length)], rawPool));
+      setQueue(picked);
+    }
+    setIdx(0);
+    setScore({ correct: 0, total: 0 });
+    resetQuestionState();
+    setScreen("quiz");
+  };
+
+  const resetQuestionState = () => { setSelectedOpt(null); setTextInput(""); setRevealed(false); setVerdict(null); };
+  useEffect(() => resetQuestionState(), [idx]);
+
+  const current = queue[idx];
+
+  const recordResult = (itemId, correct) => {
+    const setter = isGrammar ? setGrammarStats : setVocabStats;
+    const key = isGrammar ? GRAMMAR_STATS_KEY : VOCAB_STATS_KEY;
+    const base = isGrammar ? grammarStats : vocabStats;
+    const next = { ...base };
+    const s = next[itemId] || { correct: 0, total: 0 };
+    next[itemId] = { correct: s.correct + (correct ? 1 : 0), total: s.total + 1, lastResult: correct ? "correct" : "incorrect" };
+    setter(next);
+    saveStats(key, next);
+    setScore((sc) => ({ correct: sc.correct + (correct ? 1 : 0), total: sc.total + 1 }));
+  };
+
+  const submitMC = (opt) => {
+    if (verdict) return;
+    setSelectedOpt(opt);
+    const correct = opt === current.answer;
+    setVerdict(correct ? "correct" : "incorrect");
+    recordResult(current.id, correct);
+  };
+  const submitFill = () => {
+    if (verdict) return;
+    const candidates = [current.answer, ...(current.altAnswers || [])].map(normalizeJP);
+    const correct = candidates.includes(normalizeJP(textInput));
+    setVerdict(correct ? "correct" : "incorrect");
+    recordResult(current.id, correct);
+  };
+  const revealTranslation = () => { if (!revealed) setRevealed(true); };
+  const selfGrade = (correct) => {
+    if (verdict) return;
+    setVerdict(correct ? "correct" : "incorrect");
+    recordResult(current.id, correct);
+  };
+  const goNext = () => { if (idx + 1 >= queue.length) setScreen("summary"); else setIdx(idx + 1); };
+
+  const toggleChapter = (n) => {
+    const next = new Set(selectedChapters);
+    next.has(n) ? next.delete(n) : next.add(n);
+    setSelectedChapters(next);
+  };
+  const toggleType = (t) => {
+    const next = new Set(selectedTypes);
+    if (next.has(t) && next.size === 1) return;
+    next.has(t) ? next.delete(t) : next.add(t);
+    setSelectedTypes(next);
+  };
+
+  return (
+    <div style={S.appRoot}>
+      <div style={S.grid} />
+      <header style={S.header}>
+        <div style={S.headerInner}>
+          <div style={S.brandRow}>
+            <div style={S.hankoMark}>正</div>
+            <div>
+              <div style={S.brandTitle}>文法道場</div>
+              <div style={S.brandSub}>GRAMMAR &amp; VOCAB DOJO — Genki I, Ch. 1–7</div>
+            </div>
+          </div>
+          {screen === "quiz" && <button style={S.quitBtn} onClick={() => setScreen("setup")}>End session</button>}
+        </div>
+        {screen === "setup" && (
+          <div style={S.modeRow}>
+            <button style={{ ...S.modeBtn, ...(isGrammar ? S.modeBtnActive : {}) }} onClick={() => switchMode("grammar")}>文法 Grammar</button>
+            <button style={{ ...S.modeBtn, ...(!isGrammar ? S.modeBtnActive : {}) }} onClick={() => switchMode("vocab")}>単語 Vocabulary</button>
+          </div>
+        )}
+      </header>
+
+      <main style={S.main}>
+        {screen === "setup" && (
+          <SetupScreen
+            chapterTitles={chapterTitles} selectedChapters={selectedChapters} toggleChapter={toggleChapter}
+            selectedTypes={selectedTypes} toggleType={toggleType}
+            sessionSize={sessionSize} setSessionSize={setSessionSize}
+            pool={pool} startQuiz={startQuiz} chapterAccuracy={chapterAccuracy}
+            poolLabel={isGrammar ? "question" : "word"}
+          />
+        )}
+        {screen === "quiz" && current && (
+          <QuizScreen
+            item={current} idx={idx} total={queue.length} score={score}
+            selectedOpt={selectedOpt} submitMC={submitMC}
+            textInput={textInput} setTextInput={setTextInput} submitFill={submitFill}
+            revealed={revealed} revealTranslation={revealTranslation}
+            selfGrade={selfGrade} verdict={verdict} onNext={goNext}
+          />
+        )}
+        {screen === "summary" && <SummaryScreen score={score} onRestart={() => setScreen("setup")} onRedo={startQuiz} />}
+      </main>
+    </div>
+  );
+}
+
+function SetupScreen({ chapterTitles, selectedChapters, toggleChapter, selectedTypes, toggleType, sessionSize, setSessionSize, pool, startQuiz, chapterAccuracy, poolLabel }) {
+  const chapters = Object.keys(chapterTitles).map(Number);
+  return (
+    <div style={S.setupWrap}>
+      <section style={S.card}>
+        <div style={S.cardLabel}>教材　CHAPTERS</div>
+        <div style={S.chapterGrid}>
+          {chapters.map((n) => {
+            const active = selectedChapters.has(n);
+            const acc = chapterAccuracy[n];
+            return (
+              <button key={n} onClick={() => toggleChapter(n)} style={{ ...S.chapterTile, ...(active ? S.chapterTileActive : {}) }}>
+                <div style={S.chapterNum}>{String(n).padStart(2, "0")}</div>
+                <div style={S.chapterName}>{chapterTitles[n]}</div>
+                {acc !== null && <div style={S.chapterAcc}>{acc}% mastered</div>}
+              </button>
+            );
+          })}
+          {UPCOMING_CHAPTERS.map((n) => (
+            <div key={n} style={S.chapterTileDisabled}>
+              <div style={S.chapterNum}>{String(n).padStart(2, "0")}</div>
+              <div style={S.chapterName}>coming soon</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section style={S.card}>
+        <div style={S.cardLabel}>けいしき　DRILL TYPES</div>
+        <div style={S.typeRow}>
+          <TypeChip label="Multiple choice" desc="click the correct answer" active={selectedTypes.has("mc")} onClick={() => toggleType("mc")} />
+          <TypeChip label="Write the word" desc="type the correct form" active={selectedTypes.has("fill")} onClick={() => toggleType("fill")} />
+          <TypeChip label="Write the translation" desc="self-graded" active={selectedTypes.has("translate")} onClick={() => toggleType("translate")} />
+        </div>
+      </section>
+
+      <section style={S.card}>
+        <div style={S.cardLabel}>ながさ　SESSION LENGTH</div>
+        <div style={S.sizeRow}>
+          {SESSION_SIZE_OPTIONS.map((opt) => (
+            <button key={opt} onClick={() => setSessionSize(opt)} style={{ ...S.sizeChip, ...(sessionSize === opt ? S.sizeChipActive : {}) }}>
+              {opt === "all" ? "All" : opt}
+            </button>
+          ))}
+        </div>
+        <div style={S.sizeNote}>New and previously-missed items are prioritized automatically.</div>
+      </section>
+
+      <div style={S.startRow}>
+        <div style={S.poolCount}>{pool.length} {poolLabel}{pool.length === 1 ? "" : "s"} in this filter</div>
+        <button style={{ ...S.startBtn, opacity: pool.length ? 1 : 0.4 }} disabled={!pool.length} onClick={startQuiz}>✨ Begin practice</button>
+      </div>
+    </div>
+  );
+}
+
+function TypeChip({ label, desc, active, onClick }) {
+  return (
+    <button onClick={onClick} style={{ ...S.typeChip, ...(active ? S.typeChipActive : {}) }}>
+      <div style={S.typeChipLabel}>{label}</div>
+      <div style={S.typeChipDesc}>{desc}</div>
+    </button>
+  );
+}
+
+function QuizScreen({ item, idx, total, score, selectedOpt, submitMC, textInput, setTextInput, submitFill, revealed, revealTranslation, selfGrade, verdict, onNext }) {
+  return (
+    <div style={S.quizWrap}>
+      <div style={S.progressRow}>
+        {Array.from({ length: total }).map((_, i) => (
+          <div key={i} style={{ ...S.progressCell, ...(i < idx ? S.progressCellDone : {}), ...(i === idx ? S.progressCellCurrent : {}) }} />
+        ))}
+      </div>
+      <div style={S.metaRow}>
+        <span style={S.chapterBadge}>Ch.{item.chapter} — {item.point}</span>
+        <span style={S.scoreText}>{score.correct} / {score.total}</span>
+      </div>
+
+      <div style={S.qCard}>
+        {verdict && <StampOverlay verdict={verdict} />}
+        <div style={S.qSentence}>{item.sentence}</div>
+
+        {item.type === "mc" && (
+          <div style={S.optionsGrid}>
+            {item.options.map((opt) => {
+              const isChosen = selectedOpt === opt;
+              const isAnswer = opt === item.answer;
+              let style = S.optionBtn;
+              if (verdict && isAnswer) style = { ...style, ...S.optionCorrect };
+              else if (verdict && isChosen && !isAnswer) style = { ...style, ...S.optionWrong };
+              else if (isChosen) style = { ...style, ...S.optionChosen };
+              return <button key={opt} style={style} onClick={() => submitMC(opt)} disabled={!!verdict}>{opt}</button>;
+            })}
+          </div>
+        )}
+
+        {item.type === "fill" && (
+          <div>
+            <input style={S.fillInput} value={textInput} disabled={!!verdict}
+              onChange={(e) => setTextInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitFill()}
+              placeholder="こたえを　かいて　ください" />
+            {!verdict ? (
+              <button style={S.checkBtn} onClick={submitFill} disabled={!textInput.trim()}>Check</button>
+            ) : (
+              verdict === "incorrect" && <div style={S.correctAnswerBox}>Correct answer: <strong>{item.answer}</strong></div>
+            )}
+          </div>
+        )}
+
+        {item.type === "translate" && (
+          <div>
+            <div style={S.translateDirLabel}>{item.dir === "jp-en" ? "Write the English translation" : "Write the Japanese translation"}</div>
+            <textarea style={S.translateInput} value={textInput} disabled={revealed}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder={item.dir === "jp-en" ? "type the English meaning..." : "こたえを かいて ください"} />
+            {!revealed ? (
+              <button style={S.checkBtn} onClick={revealTranslation} disabled={!textInput.trim()}>Reveal answer</button>
+            ) : (
+              <>
+                <div style={S.correctAnswerBox}>Model answer: <strong>{item.translation}</strong></div>
+                {!verdict && (
+                  <div style={S.selfGradeRow}>
+                    <span style={S.selfGradeLabel}>Did you get it right?</span>
+                    <button style={S.selfGradeYes} onClick={() => selfGrade(true)}>✓ Yes</button>
+                    <button style={S.selfGradeNo} onClick={() => selfGrade(false)}>✕ No</button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {verdict && item.note && <div style={S.noteBox}>{item.note}</div>}
+        {verdict && item.type !== "translate" && item.translation && <div style={S.translationLine}>{item.translation}</div>}
+      </div>
+
+      {verdict && <button style={S.nextBtn} onClick={onNext}>{idx + 1 >= total ? "Finish session" : "Next question"} →</button>}
+    </div>
+  );
+}
+
+function StampOverlay({ verdict }) {
+  if (verdict === "correct") {
+    return <div style={{ ...S.hankoStamp, animation: "stampDown 0.35s cubic-bezier(.2,1.4,.4,1)" }}><div style={S.hankoStampInner}>正</div></div>;
+  }
+  return <div style={{ ...S.inkX, animation: "inkIn 0.3s ease-out" }}>✕</div>;
+}
+
+function SummaryScreen({ score, onRestart, onRedo }) {
+  const pct = score.total ? Math.round((score.correct / score.total) * 100) : 0;
+  return (
+    <div style={S.summaryWrap}>
+      <div style={S.hankoMarkBig}>{pct >= 80 ? "合格" : "もう一度"}</div>
+      <div style={S.summaryScore}>{score.correct} / {score.total}</div>
+      <div style={S.summarySub}>{pct}% correct this session</div>
+      <div style={S.summaryBtnRow}>
+        <button style={S.startBtn} onClick={onRedo}>↻ New set (same filters)</button>
+        <button style={S.quitBtnLarge} onClick={onRestart}>📖 Choose new chapters</button>
+      </div>
+    </div>
+  );
+}
+
+const COLORS = {
+  paper: "#EBE3D0", paperDeep: "#E2D8C0", ink: "#2A2521", inkSoft: "#5C5348",
+  line: "#C6B99C", shu: "#B33B29", shuDeep: "#8E2D1E", ai: "#33495B", good: "#4C6B4F",
+};
+
+const S = {
+  appRoot: { position: "relative", minHeight: "100vh", background: COLORS.paper, fontFamily: "'Source Serif 4', serif", color: COLORS.ink, overflowX: "hidden" },
+  grid: { position: "fixed", inset: 0, backgroundImage: `linear-gradient(${COLORS.line}55 1px, transparent 1px), linear-gradient(90deg, ${COLORS.line}55 1px, transparent 1px)`, backgroundSize: "28px 28px", pointerEvents: "none", opacity: 0.5 },
+  header: { position: "relative", borderBottom: `2px solid ${COLORS.ink}`, background: `${COLORS.paperDeep}CC`, backdropFilter: "blur(2px)" },
+  headerInner: { maxWidth: 720, margin: "0 auto", padding: "18px 20px 6px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+  brandRow: { display: "flex", alignItems: "center", gap: 14 },
+  hankoMark: { width: 44, height: 44, borderRadius: 6, border: `2.5px solid ${COLORS.shu}`, color: COLORS.shu, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Shippori Mincho', serif", fontWeight: 800, fontSize: 22, transform: "rotate(-6deg)" },
+  brandTitle: { fontFamily: "'Shippori Mincho', serif", fontWeight: 800, fontSize: 22, letterSpacing: 1 },
+  brandSub: { fontFamily: "'JetBrains Mono', monospace", fontSize: 11, letterSpacing: 1.5, color: COLORS.inkSoft, marginTop: 2 },
+  quitBtn: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, background: "transparent", border: `1.5px solid ${COLORS.ink}`, borderRadius: 6, padding: "8px 14px", color: COLORS.ink, cursor: "pointer" },
+  modeRow: { maxWidth: 720, margin: "0 auto", padding: "0 20px 16px", display: "flex", gap: 8 },
+  modeBtn: { flex: 1, fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, fontSize: 14, padding: "10px 14px", borderRadius: 8, border: `1.5px solid ${COLORS.line}`, background: "transparent", color: COLORS.inkSoft, cursor: "pointer" },
+  modeBtnActive: { borderColor: COLORS.shu, background: `${COLORS.shu}14`, color: COLORS.shuDeep },
+  main: { position: "relative", maxWidth: 720, margin: "0 auto", padding: "28px 20px 80px" },
+
+  setupWrap: { display: "flex", flexDirection: "column", gap: 22 },
+  card: { background: COLORS.paper, border: `1.5px solid ${COLORS.ink}`, borderRadius: 10, padding: 20, boxShadow: "3px 3px 0 rgba(42,37,33,0.12)" },
+  cardLabel: { fontFamily: "'JetBrains Mono', monospace", fontSize: 11, letterSpacing: 2, color: COLORS.shu, marginBottom: 14, fontWeight: 600 },
+  chapterGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 },
+  chapterTile: { textAlign: "left", background: "transparent", border: `1.5px solid ${COLORS.line}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", fontFamily: "'Zen Kaku Gothic New', sans-serif", color: COLORS.inkSoft },
+  chapterTileActive: { background: COLORS.ink, borderColor: COLORS.ink, color: COLORS.paper },
+  chapterTileDisabled: { textAlign: "left", border: `1.5px dashed ${COLORS.line}`, borderRadius: 8, padding: "10px 12px", color: `${COLORS.inkSoft}88`, fontFamily: "'Zen Kaku Gothic New', sans-serif" },
+  chapterNum: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, opacity: 0.75 },
+  chapterName: { fontSize: 13, marginTop: 3, fontWeight: 500 },
+  chapterAcc: { fontFamily: "'JetBrains Mono', monospace", fontSize: 10, marginTop: 6, opacity: 0.85 },
+
+  typeRow: { display: "flex", gap: 10, flexWrap: "wrap" },
+  typeChip: { flex: "1 1 160px", textAlign: "left", background: "transparent", border: `1.5px solid ${COLORS.line}`, borderRadius: 8, padding: "12px 14px", cursor: "pointer" },
+  typeChipActive: { borderColor: COLORS.shu, background: `${COLORS.shu}14` },
+  typeChipLabel: { fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, fontSize: 14 },
+  typeChipDesc: { fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: COLORS.inkSoft, marginTop: 4 },
+
+  sizeRow: { display: "flex", gap: 8, flexWrap: "wrap" },
+  sizeChip: { minWidth: 56, textAlign: "center", background: "transparent", border: `1.5px solid ${COLORS.line}`, borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, fontSize: 13 },
+  sizeChipActive: { borderColor: COLORS.shu, background: `${COLORS.shu}14`, color: COLORS.shuDeep },
+  sizeNote: { fontFamily: "'Source Serif 4', serif", fontStyle: "italic", fontSize: 12.5, color: COLORS.inkSoft, marginTop: 10 },
+
+  startRow: { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
+  poolCount: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: COLORS.inkSoft },
+  startBtn: { display: "flex", alignItems: "center", gap: 8, background: COLORS.shu, color: "#fff", border: "none", borderRadius: 8, padding: "13px 22px", fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "3px 3px 0 rgba(42,37,33,0.25)" },
+
+  quizWrap: { display: "flex", flexDirection: "column", gap: 16 },
+  progressRow: { display: "flex", gap: 4, flexWrap: "wrap" },
+  progressCell: { width: 14, height: 14, border: `1.5px solid ${COLORS.line}`, borderRadius: 2 },
+  progressCellDone: { background: COLORS.ink, borderColor: COLORS.ink },
+  progressCellCurrent: { borderColor: COLORS.shu, borderWidth: 2 },
+  metaRow: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+  chapterBadge: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: COLORS.ai, fontWeight: 600 },
+  scoreText: { fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: COLORS.inkSoft },
+
+  qCard: { position: "relative", background: COLORS.paperDeep, border: `2px solid ${COLORS.ink}`, borderRadius: 10, padding: "30px 24px", boxShadow: "4px 4px 0 rgba(42,37,33,0.15)", overflow: "hidden" },
+  qSentence: { fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 21, lineHeight: 1.9, marginBottom: 22 },
+
+  optionsGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 },
+  optionBtn: { fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 16, padding: "12px 10px", borderRadius: 8, border: `1.5px solid ${COLORS.ink}`, background: COLORS.paper, cursor: "pointer", outline: "none" },
+  optionChosen: { background: `${COLORS.ai}22`, borderColor: COLORS.ai },
+  optionCorrect: { background: `${COLORS.good}22`, borderColor: COLORS.good, color: COLORS.good, fontWeight: 700 },
+  optionWrong: { background: `${COLORS.shu}18`, borderColor: COLORS.shu, color: COLORS.shu, textDecoration: "line-through" },
+
+  fillInput: { width: "100%", fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 18, padding: "12px 14px", borderRadius: 8, border: `1.5px solid ${COLORS.ink}`, background: "#fff", boxSizing: "border-box" },
+  translateInput: { width: "100%", minHeight: 70, fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 16, padding: "12px 14px", borderRadius: 8, border: `1.5px solid ${COLORS.ink}`, background: "#fff", boxSizing: "border-box", resize: "vertical" },
+  translateDirLabel: { fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: COLORS.inkSoft, marginBottom: 8, letterSpacing: 0.5 },
+
+  checkBtn: { marginTop: 12, background: COLORS.ink, color: COLORS.paper, border: "none", borderRadius: 8, padding: "10px 20px", fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer" },
+  correctAnswerBox: { marginTop: 14, fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 15, background: `${COLORS.ai}14`, border: `1px solid ${COLORS.ai}55`, borderRadius: 6, padding: "10px 12px" },
+  selfGradeRow: { marginTop: 12, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" },
+  selfGradeLabel: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: COLORS.inkSoft },
+  selfGradeYes: { display: "flex", alignItems: "center", gap: 6, background: COLORS.good, color: "#fff", border: "none", borderRadius: 6, padding: "8px 14px", fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, cursor: "pointer" },
+  selfGradeNo: { display: "flex", alignItems: "center", gap: 6, background: COLORS.shu, color: "#fff", border: "none", borderRadius: 6, padding: "8px 14px", fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, cursor: "pointer" },
+  noteBox: { marginTop: 16, fontFamily: "'Source Serif 4', serif", fontStyle: "italic", fontSize: 13.5, color: COLORS.inkSoft, borderTop: `1px dashed ${COLORS.line}`, paddingTop: 12 },
+  translationLine: { marginTop: 8, fontFamily: "'Source Serif 4', serif", fontSize: 14, color: COLORS.inkSoft },
+
+  hankoStamp: { position: "absolute", top: 10, right: 16, zIndex: 3 },
+  hankoStampInner: { width: 62, height: 62, borderRadius: 8, border: `3px solid ${COLORS.shu}`, color: COLORS.shu, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Shippori Mincho', serif", fontWeight: 800, fontSize: 30, background: `${COLORS.shu}0D`, transform: "rotate(-8deg)" },
+  inkX: { position: "absolute", top: 6, right: 22, zIndex: 3, fontSize: 46, color: COLORS.inkSoft, fontFamily: "'Shippori Mincho', serif", transform: "rotate(-6deg)" },
+
+  nextBtn: { alignSelf: "flex-end", display: "flex", alignItems: "center", gap: 6, background: COLORS.ink, color: COLORS.paper, border: "none", borderRadius: 8, padding: "11px 18px", fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer" },
+
+  summaryWrap: { display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "60px 0" },
+  hankoMarkBig: { fontFamily: "'Shippori Mincho', serif", fontWeight: 800, fontSize: 40, color: COLORS.shu, border: `3px solid ${COLORS.shu}`, borderRadius: 12, padding: "10px 26px", transform: "rotate(-4deg)", marginBottom: 10 },
+  summaryScore: { fontFamily: "'JetBrains Mono', monospace", fontSize: 40, fontWeight: 700 },
+  summarySub: { fontFamily: "'Zen Kaku Gothic New', sans-serif", color: COLORS.inkSoft, marginBottom: 20 },
+  summaryBtnRow: { display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" },
+  quitBtnLarge: { display: "flex", alignItems: "center", gap: 8, background: "transparent", border: `1.5px solid ${COLORS.ink}`, borderRadius: 8, padding: "13px 22px", fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer", color: COLORS.ink },
+};
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+
+<script>
+  // Babel Standalone's default "automatic" JSX runtime injects an ES
+  // module import (react/jsx-runtime) that plain <script> tags can't
+  // resolve, which silently breaks the page (blank white screen).
+  // Compiling manually with the classic runtime avoids that.
+  var source = document.getElementById("app-source").textContent;
+  var compiled = Babel.transform(source, {
+    presets: [["react", { runtime: "classic" }]]
+  }).code;
+  (0, eval)(compiled);
+</script>
+</body>
+</html>
