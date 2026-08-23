@@ -54,22 +54,37 @@ const GRAMMAR_ITEMS = [
   { id: "c1-2b", chapter: 1, point: "Question sentences (か)", type: "fill",
     sentence: "Turn this into a question: おとうとはだいがくせいです。",
     answer: "おとうとはだいがくせいですか。", note: "Add か to the end — no question mark needed。" },
-  { id: "c1-3", chapter: 1, point: "Noun1のNoun2 (possession)", type: "mc",
-    sentence: "＿＿＿せんこうはこくさいかんけいです。(Tanaka's major)", answer: "たなかさんの",
-    options: ["たなかさんの", "たなかさんは", "たなかさんを", "たなかさんが"],
-    translation: "Mr./Ms. Tanaka's major is international relations.", note: "Noun1の Noun2 = Noun1's Noun2。" },
-  { id: "c1-3b", chapter: 1, point: "Noun1のNoun2 (possession)", type: "mc",
-    sentence: "＿＿＿おねえさんはいしゃです。(Yamada's older sister)", answer: "やまださんの",
-    options: ["やまださんの", "やまださんは", "やまださんを", "やまださんが"],
-    translation: "Mr./Ms. Yamada's older sister is a doctor.", note: "Noun1の Noun2 = Noun1's Noun2。" },
-  { id: "c1-4", chapter: 1, point: "Noun1のNoun2 (possession)", type: "translate", dir: "en-jp",
-    sentence: "My major is Asian studies.",
-    translation: "わたしのせんこうはアジアけんきょうです。",
-    note: "わたしの here shows possession — 'my major'。" },
-  { id: "c1-4b", chapter: 1, point: "Noun1のNoun2 (possession)", type: "translate", dir: "jp-en",
-    sentence: "たなかさんのせんこうはせいじです。",
-    translation: "Mr./Ms. Tanaka's major is politics.",
-    note: "Noun1の Noun2 = Noun1's Noun2。" },
+  { id: "c1-3", chapter: 1, point: "Noun1のNoun2 (possession)", type: "mc", template: true, slot: "major",
+    build: (w) => ({
+      sentence: `＿＿＿せんこうは${w.jp}です。(Tanaka's major)`, answer: "たなかさんの",
+      options: ["たなかさんの", "たなかさんは", "たなかさんを", "たなかさんが"],
+      translation: `Mr./Ms. Tanaka's major is ${w.en.replace(" (major)", "")}.`, note: "Noun1の Noun2 = Noun1's Noun2。",
+    }),
+    fallback: () => ({ sentence: "＿＿＿せんこうはこくさいかんけいです。(Tanaka's major)", answer: "たなかさんの",
+      options: ["たなかさんの", "たなかさんは", "たなかさんを", "たなかさんが"], translation: "Mr./Ms. Tanaka's major is international relations.", note: "Noun1の Noun2 = Noun1's Noun2。" }) },
+  { id: "c1-3b", chapter: 1, point: "Noun1のNoun2 (possession)", type: "mc", template: true, slot: "occupation",
+    build: (w) => ({
+      sentence: `＿＿＿おねえさんは${w.jp}です。(Yamada's older sister)`, answer: "やまださんの",
+      options: ["やまださんの", "やまださんは", "やまださんを", "やまださんが"],
+      translation: `Mr./Ms. Yamada's older sister is a(n) ${w.en}.`, note: "Noun1の Noun2 = Noun1's Noun2。",
+    }),
+    fallback: () => ({ sentence: "＿＿＿おねえさんはいしゃです。(Yamada's older sister)", answer: "やまださんの",
+      options: ["やまださんの", "やまださんは", "やまださんを", "やまださんが"], translation: "Mr./Ms. Yamada's older sister is a doctor.", note: "Noun1の Noun2 = Noun1's Noun2。" }) },
+  { id: "c1-4", chapter: 1, point: "Noun1のNoun2 (possession)", type: "translate", dir: "en-jp", template: true, slot: "major",
+    build: (w) => ({
+      sentence: `My major is ${w.en.replace(" (major)", "")}.`,
+      translation: `わたしのせんこうは${w.jp}です。`,
+      note: "わたしの here shows possession — 'my major'。",
+    }),
+    fallback: () => ({ sentence: "My major is Asian studies.", translation: "わたしのせんこうはアジアけんきょうです。", note: "わたしの here shows possession — 'my major'。" }) },
+  { id: "c1-4b", chapter: 1, point: "Noun1のNoun2 (possession)", type: "translate", dir: "jp-en", template: true, slot: "major",
+    build: (w) => ({
+      sentence: `たなかさんのせんこうは${w.jp}です。`,
+      translation: `Mr./Ms. Tanaka's major is ${w.en.replace(" (major)", "")}.`,
+      note: "Noun1の Noun2 = Noun1's Noun2。",
+    }),
+    fallback: () => ({ sentence: "たなかさんのせんこうはせいじです。", translation: "Mr./Ms. Tanaka's major is politics.", note: "Noun1の Noun2 = Noun1's Noun2。" }) },
+
 
   { id: "c2-1", chapter: 2, point: "これ／それ／あれ／どれ", type: "mc",
     sentence: "(the book is near the listener) ＿＿＿はほんです。", answer: "それ",
@@ -87,14 +102,22 @@ const GRAMMAR_ITEMS = [
     sentence: "＿＿＿かさはわたしのです。(umbrella near the speaker)", answer: "この",
     options: ["この", "その", "あの", "どの"],
     translation: "This umbrella is mine.", note: "この＋noun refers to something near the speaker。" },
-  { id: "c2-3", chapter: 2, point: "ここ／そこ／あそこ／どこ", type: "mc",
-    sentence: "としょかんは＿＿＿です。(over there, far from both speakers)", answer: "あそこ",
-    options: ["ここ", "そこ", "あそこ", "どこ"],
-    translation: "The library is over there.", note: "あそこ pairs with あの／あれ — same distance logic。" },
-  { id: "c2-3b", chapter: 2, point: "ここ／そこ／あそこ／どこ", type: "mc",
-    sentence: "ぎんこうは＿＿＿です。(near the listener)", answer: "そこ",
-    options: ["ここ", "そこ", "あそこ", "どこ"],
-    translation: "The bank is there (near you).", note: "そこ pairs with それ／その — near the listener。" },
+  { id: "c2-3", chapter: 2, point: "ここ／そこ／あそこ／どこ", type: "mc", template: true, slot: "place",
+    build: (w) => ({
+      sentence: `${w.jp}は＿＿＿です。(over there, far from both speakers)`, answer: "あそこ",
+      options: ["ここ", "そこ", "あそこ", "どこ"],
+      translation: `The ${w.en} is over there.`, note: "あそこ pairs with あの／あれ — same distance logic。",
+    }),
+    fallback: () => ({ sentence: "としょかんは＿＿＿です。(over there, far from both speakers)", answer: "あそこ",
+      options: ["ここ", "そこ", "あそこ", "どこ"], translation: "The library is over there.", note: "あそこ pairs with あの／あれ — same distance logic。" }) },
+  { id: "c2-3b", chapter: 2, point: "ここ／そこ／あそこ／どこ", type: "mc", template: true, slot: "place",
+    build: (w) => ({
+      sentence: `${w.jp}は＿＿＿です。(near the listener)`, answer: "そこ",
+      options: ["ここ", "そこ", "あそこ", "どこ"],
+      translation: `The ${w.en} is there (near you).`, note: "そこ pairs with それ／その — near the listener。",
+    }),
+    fallback: () => ({ sentence: "ぎんこうは＿＿＿です。(near the listener)", answer: "そこ",
+      options: ["ここ", "そこ", "あそこ", "どこ"], translation: "The bank is there (near you).", note: "そこ pairs with それ／その — near the listener。" }) },
   { id: "c2-4", chapter: 2, point: "だれのNoun", type: "fill",
     sentence: "Ask 'Whose bag is this?'",
     answer: "これはだれのかばんですか。", note: "だれの Noun = whose Noun。" },
@@ -124,12 +147,18 @@ const GRAMMAR_ITEMS = [
     options: ["ね", "よ", "か", "の"],
     translation: "That hat is expensive, you know.", note: "よ asserts information the listener may not know。" },
 
-  { id: "c3-1", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill",
-    sentence: "Conjugate のむ (to drink) into the ます-form.",
-    answer: "のみます", note: "u-verb: change final -u to -i, add ます。" },
-  { id: "c3-1b", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill",
-    sentence: "Conjugate よむ (to read) into the ます-form.",
-    answer: "よみます", note: "u-verb: change final -u to -i, add ます。" },
+  { id: "c3-1", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill", template: true, slot: "godanVerb",
+    build: (w) => ({
+      sentence: `Conjugate ${w.jp} (${w.en}) into the ます-form.`,
+      answer: conjugate.masu(w.jp, []), note: "u-verb: change final -u to -i, add ます。",
+    }),
+    fallback: () => ({ sentence: "Conjugate のむ (to drink) into the ます-form.", answer: "のみます", note: "u-verb: change final -u to -i, add ます。" }) },
+  { id: "c3-1b", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill", template: true, slot: "godanVerb",
+    build: (w) => ({
+      sentence: `Conjugate ${w.jp} (${w.en}) into the ます-form.`,
+      answer: conjugate.masu(w.jp, []), note: "u-verb: change final -u to -i, add ます。",
+    }),
+    fallback: () => ({ sentence: "Conjugate よむ (to read) into the ます-form.", answer: "よみます", note: "u-verb: change final -u to -i, add ます。" }) },
   { id: "c3-2", chapter: 3, point: "Verb types", type: "mc",
     sentence: "Which of these is a る-verb (ichidan)?", answer: "たべる",
     options: ["たべる", "のむ", "きく", "はなす"],
@@ -185,20 +214,34 @@ const GRAMMAR_ITEMS = [
     translation: "I study Japanese, but I don't study English.",
     note: "は marks contrast between two topics; が here means 'but'。" },
 
-  { id: "c4-1", chapter: 4, point: "Xが あります／います", type: "mc",
-    sentence: "こうえんに ねこが＿＿＿。(there is a cat in the park)", answer: "います",
-    options: ["います", "あります", "です", "いました"],
-    translation: "There is a cat in the park.", note: "います = animate, あります = inanimate。" },
-  { id: "c4-1b", chapter: 4, point: "Xが あります／います", type: "mc",
-    sentence: "つくえのうえに ほんが＿＿＿。(there is a book on the desk)", answer: "あります",
-    options: ["あります", "います", "です", "ありました"],
-    translation: "There is a book on the desk.", note: "あります = inanimate things。" },
-  { id: "c4-2", chapter: 4, point: "Describing where things are", type: "fill",
-    sentence: "Say 'There is no book on the desk.'",
-    answer: "つくえのうえにほんがありません。", note: "[place]に [thing]が あります／います describes location。" },
-  { id: "c4-2b", chapter: 4, point: "Describing where things are", type: "fill",
-    sentence: "Say 'There is a cat under the chair.'",
-    answer: "いすのしたにねこがいます。", note: "[place]に [thing]が あります／います describes location。" },
+  { id: "c4-1", chapter: 4, point: "Xが あります／います", type: "mc", template: true, slot: "living",
+    build: (w) => ({
+      sentence: `こうえんに ${w.jp}が＿＿＿。(there is a ${w.en} in the park)`, answer: "います",
+      options: ["います", "あります", "です", "いました"],
+      translation: `There is a ${w.en} in the park.`, note: "います = animate, あります = inanimate。",
+    }),
+    fallback: () => ({ sentence: "こうえんに ねこが＿＿＿。(there is a cat in the park)", answer: "います",
+      options: ["います", "あります", "です", "いました"], translation: "There is a cat in the park.", note: "います = animate, あります = inanimate。" }) },
+  { id: "c4-1b", chapter: 4, point: "Xが あります／います", type: "mc", template: true, slot: "object",
+    build: (w) => ({
+      sentence: `つくえのうえに ${w.jp}が＿＿＿。(there is a ${w.en} on the desk)`, answer: "あります",
+      options: ["あります", "います", "です", "ありました"],
+      translation: `There is a ${w.en} on the desk.`, note: "あります = inanimate things。",
+    }),
+    fallback: () => ({ sentence: "つくえのうえに ほんが＿＿＿。(there is a book on the desk)", answer: "あります",
+      options: ["あります", "います", "です", "ありました"], translation: "There is a book on the desk.", note: "あります = inanimate things。" }) },
+  { id: "c4-2", chapter: 4, point: "Describing where things are", type: "fill", template: true, slot: "object",
+    build: (w) => ({
+      sentence: `Say 'There is no ${w.en} on the desk.'`,
+      answer: `つくえのうえに${w.jp}がありません。`, note: "[place]に [thing]が あります／います describes location。",
+    }),
+    fallback: () => ({ sentence: "Say 'There is no book on the desk.'", answer: "つくえのうえにほんがありません。", note: "[place]に [thing]が あります／います describes location。" }) },
+  { id: "c4-2b", chapter: 4, point: "Describing where things are", type: "fill", template: true, slot: "living",
+    build: (w) => ({
+      sentence: `Say 'There is a ${w.en} under the chair.'`,
+      answer: `いすのしたに${w.jp}がいます。`, note: "[place]に [thing]が あります／います describes location。",
+    }),
+    fallback: () => ({ sentence: "Say 'There is a cat under the chair.'", answer: "いすのしたにねこがいます。", note: "[place]に [thing]が あります／います describes location。" }) },
   { id: "c4-3", chapter: 4, point: "Past tense of です", type: "fill",
     sentence: "Say 'Yesterday was Monday.'",
     answer: "きのうはげつようびでした。", note: "です → でした for past tense。" },
@@ -206,12 +249,18 @@ const GRAMMAR_ITEMS = [
     sentence: "Say 'Yesterday was not Sunday.' (past negative)",
     answer: "きのうはにちようびじゃありませんでした。", altAnswers: ["きのうはにちようびじゃなかったです。"],
     note: "です → じゃありませんでした for past negative。" },
-  { id: "c4-4", chapter: 4, point: "Past tense of verbs", type: "fill",
-    sentence: "Conjugate たべます into the past tense.",
-    answer: "たべました", note: "ます → ました for the polite past。" },
-  { id: "c4-4b", chapter: 4, point: "Past tense of verbs", type: "fill",
-    sentence: "Conjugate たべます into the past negative.",
-    answer: "たべませんでした", note: "ます → ませんでした for the polite past negative。" },
+  { id: "c4-4", chapter: 4, point: "Past tense of verbs", type: "fill", template: true, slot: "godanVerb|ichidanVerb",
+    build: (w) => ({
+      sentence: `Conjugate ${conjugate.masu(w.jp, w.tags)} into the past tense.`,
+      answer: conjugate.masuPast(w.jp, w.tags), note: "ます → ました for the polite past。",
+    }),
+    fallback: () => ({ sentence: "Conjugate たべます into the past tense.", answer: "たべました", note: "ます → ました for the polite past。" }) },
+  { id: "c4-4b", chapter: 4, point: "Past tense of verbs", type: "fill", template: true, slot: "godanVerb|ichidanVerb",
+    build: (w) => ({
+      sentence: `Conjugate ${conjugate.masu(w.jp, w.tags)} into the past negative.`,
+      answer: conjugate.masuNegPast(w.jp, w.tags), note: "ます → ませんでした for the polite past negative。",
+    }),
+    fallback: () => ({ sentence: "Conjugate たべます into the past negative.", answer: "たべませんでした", note: "ます → ませんでした for the polite past negative。" }) },
   { id: "c4-5", chapter: 4, point: "と (and／with)", type: "translate", dir: "jp-en",
     sentence: "わたしはともだちとえいがをみました。",
     translation: "I watched a movie with a friend.", note: "と marks a companion — 'with' someone。" },
@@ -238,19 +287,18 @@ const GRAMMAR_ITEMS = [
     sentence: "Say 'I studied for as long as three hours.'",
     answer: "さんじかんもべんきょうしました。", note: "[quantity／duration]＋も can emphasize 'as much／long as'。" },
 
-  { id: "c5-1", chapter: 5, point: "Adjectives (present tense)", type: "fill",
-    sentence: "Say 'This book is expensive.'",
-    answer: "このほんはたかいです。", note: "い-adjectives attach directly to です。" },
-  { id: "c5-1b", chapter: 5, point: "Adjectives (present tense)", type: "fill",
-    sentence: "Say 'This coffee is hot.'",
-    answer: "このコーヒーはあついです。", note: "い-adjectives attach directly to です。" },
-  { id: "c5-2", chapter: 5, point: "Adjectives (past tense)", type: "fill",
-    sentence: "Conjugate たかいです into the past tense.",
-    answer: "たかかったです", note: "い-adj past: drop い, add かった。" },
-  { id: "c5-2b", chapter: 5, point: "Adjectives (past tense)", type: "fill",
-    sentence: "Conjugate たかいです into the present negative.",
-    answer: "たかくないです", altAnswers: ["たかくありません"],
-    note: "い-adj negative: drop い, add くない。" },
+  { id: "c5-1", chapter: 5, point: "Adjectives (present tense)", type: "fill", template: true, slot: "iAdj",
+    build: (w) => ({ sentence: `Say 'This is ${w.en}.'`, answer: `これは${w.jp}です。`, note: "い-adjectives attach directly to です。" }),
+    fallback: () => ({ sentence: "Say 'This book is expensive.'", answer: "このほんはたかいです。", note: "い-adjectives attach directly to です。" }) },
+  { id: "c5-1b", chapter: 5, point: "Adjectives (present tense)", type: "fill", template: true, slot: "iAdj",
+    build: (w) => ({ sentence: `Say 'This is ${w.en}.'`, answer: `これは${w.jp}です。`, note: "い-adjectives attach directly to です。" }),
+    fallback: () => ({ sentence: "Say 'This coffee is hot.'", answer: "このコーヒーはあついです。", note: "い-adjectives attach directly to です。" }) },
+  { id: "c5-2", chapter: 5, point: "Adjectives (past tense)", type: "fill", template: true, slot: "iAdj",
+    build: (w) => ({ sentence: `Conjugate ${w.jp}です into the past tense.`, answer: `${iAdjPast(w.jp)}です`, note: "い-adj past: drop い, add かった。" }),
+    fallback: () => ({ sentence: "Conjugate たかいです into the past tense.", answer: "たかかったです", note: "い-adj past: drop い, add かった。" }) },
+  { id: "c5-2b", chapter: 5, point: "Adjectives (past tense)", type: "fill", template: true, slot: "iAdj",
+    build: (w) => ({ sentence: `Conjugate ${w.jp}です into the present negative.`, answer: `${iAdjNeg(w.jp)}です`, altAnswers: [`${w.jp.slice(0, -1)}くありません`], note: "い-adj negative: drop い, add くない。" }),
+    fallback: () => ({ sentence: "Conjugate たかいです into the present negative.", answer: "たかくないです", altAnswers: ["たかくありません"], note: "い-adj negative: drop い, add くない。" }) },
   { id: "c5-3", chapter: 5, point: "Adjectives (noun modification)", type: "mc",
     sentence: "＿＿＿ ほんをかいました。(bought an expensive book)", answer: "たかい",
     options: ["たかい", "たかいの", "たかくて", "たかかった"],
@@ -279,24 +327,24 @@ const GRAMMAR_ITEMS = [
     sentence: "Ask for three photos. (さんまい＝3 flat objects)",
     answer: "しゃしんをさんまいください。", note: "枚 (まい) counts flat objects like photos or paper。" },
 
-  { id: "c6-1", chapter: 6, point: "Te-form (る-verb)", type: "fill",
-    sentence: "Conjugate たべる (to eat) into the て-form.",
-    answer: "たべて", note: "る-verbs: drop る, add て。" },
-  { id: "c6-1b", chapter: 6, point: "Te-form (る-verb)", type: "fill",
-    sentence: "Conjugate しめる (to close) into the て-form.",
-    answer: "しめて", note: "る-verbs: drop る, add て。" },
-  { id: "c6-2", chapter: 6, point: "Te-form (う-verb, く→いて)", type: "fill",
-    sentence: "Conjugate かく (to write) into the て-form.",
-    answer: "かいて", note: "く → いて。" },
-  { id: "c6-2b", chapter: 6, point: "Te-form (う-verb, く→いて)", type: "fill",
-    sentence: "Conjugate きく (to listen) into the て-form.",
-    answer: "きいて", note: "く → いて。" },
-  { id: "c6-3", chapter: 6, point: "Te-form (う-verb, う／つ／る→って)", type: "fill",
-    sentence: "Conjugate まつ (to wait) into the て-form.",
-    answer: "まって", note: "う／つ／る → って。" },
-  { id: "c6-3b", chapter: 6, point: "Te-form (う-verb, う／つ／る→って)", type: "fill",
-    sentence: "Conjugate かう (to buy) into the て-form.",
-    answer: "かって", note: "う／つ／る → って。" },
+  { id: "c6-1", chapter: 6, point: "Te-form (る-verb)", type: "fill", template: true, slot: "ichidanVerb",
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "る-verbs: drop る, add て。" }),
+    fallback: () => ({ sentence: "Conjugate たべる (to eat) into the て-form.", answer: "たべて", note: "る-verbs: drop る, add て。" }) },
+  { id: "c6-1b", chapter: 6, point: "Te-form (る-verb)", type: "fill", template: true, slot: "ichidanVerb",
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "る-verbs: drop る, add て。" }),
+    fallback: () => ({ sentence: "Conjugate しめる (to close) into the て-form.", answer: "しめて", note: "る-verbs: drop る, add て。" }) },
+  { id: "c6-2", chapter: 6, point: "Te-form (う-verb)", type: "fill", template: true, slot: "godanVerb",
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "The te-form ending depends on the verb's last kana (く→いて, む/ぬ/ぶ→んで, う/つ/る→って, す→して)。" }),
+    fallback: () => ({ sentence: "Conjugate かく (to write) into the て-form.", answer: "かいて", note: "く → いて。" }) },
+  { id: "c6-2b", chapter: 6, point: "Te-form (う-verb)", type: "fill", template: true, slot: "godanVerb",
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "The te-form ending depends on the verb's last kana (く→いて, む/ぬ/ぶ→んで, う/つ/る→って, す→して)。" }),
+    fallback: () => ({ sentence: "Conjugate きく (to listen) into the て-form.", answer: "きいて", note: "く → いて。" }) },
+  { id: "c6-3", chapter: 6, point: "Te-form (う-verb)", type: "fill", template: true, slot: "godanVerb",
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "The te-form ending depends on the verb's last kana (く→いて, む/ぬ/ぶ→んで, う/つ/る→って, す→して)。" }),
+    fallback: () => ({ sentence: "Conjugate まつ (to wait) into the て-form.", answer: "まって", note: "う／つ／る → って。" }) },
+  { id: "c6-3b", chapter: 6, point: "Te-form (う-verb)", type: "fill", template: true, slot: "godanVerb",
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "The te-form ending depends on the verb's last kana (く→いて, む/ぬ/ぶ→んで, う/つ/る→って, す→して)。" }),
+    fallback: () => ({ sentence: "Conjugate かう (to buy) into the て-form.", answer: "かって", note: "う／つ／る → って。" }) },
   { id: "c6-4", chapter: 6, point: "～てください", type: "translate", dir: "en-jp",
     sentence: "Please wait a little.",
     translation: "ちょっとまってください。", note: "[て-form]＋ください = please do X。" },
@@ -401,7 +449,7 @@ const VOCAB_ITEMS = [
   { id: "v1-7", chapter: 1, jp: "いちねんせい", en: "first-year student" },
   { id: "v1-8", chapter: 1, jp: "せんこう", en: "major" },
   { id: "v1-9", chapter: 1, jp: "わたし", en: "I" },
-  { id: "v1-10", chapter: 1, jp: "ともだち", en: "friend" },
+  { id: "v1-10", chapter: 1, jp: "ともだち", en: "friend", tags: ["living"] },
   { id: "v1-11", chapter: 1, jp: "にほんじん", en: "Japanese people" },
   { id: "v1-12", chapter: 1, jp: "いま", en: "now" },
   { id: "v1-13", chapter: 1, jp: "ごぜん", en: "A.M." },
@@ -422,28 +470,28 @@ const VOCAB_ITEMS = [
   { id: "v1-28", chapter: 1, jp: "そうです", en: "That's right" },
   { id: "v1-29", chapter: 1, jp: "そうですか", en: "I see; Is that so?" },
   { id: "v1-30", chapter: 1, jp: "イギリス", en: "Britain" },
-  { id: "v1-31", chapter: 1, jp: "アジアけんきょう", en: "Asian studies (major)" },
-  { id: "v1-32", chapter: 1, jp: "けいざい", en: "economics (major)" },
-  { id: "v1-33", chapter: 1, jp: "こうがく", en: "engineering (major)" },
-  { id: "v1-34", chapter: 1, jp: "こくさいかんけい", en: "international relations (major)" },
-  { id: "v1-35", chapter: 1, jp: "せいじ", en: "politics (major)" },
-  { id: "v1-36", chapter: 1, jp: "せいぶつがく", en: "biology (major)" },
-  { id: "v1-37", chapter: 1, jp: "ビジネス", en: "business (major)" },
-  { id: "v1-38", chapter: 1, jp: "ぶんがく", en: "literature (major)" },
-  { id: "v1-39", chapter: 1, jp: "れきし", en: "history (major)" },
-  { id: "v1-40", chapter: 1, jp: "いしゃ", en: "doctor" },
-  { id: "v1-41", chapter: 1, jp: "かんごし", en: "nurse" },
+  { id: "v1-31", chapter: 1, jp: "アジアけんきょう", en: "Asian studies (major)", tags: ["major"] },
+  { id: "v1-32", chapter: 1, jp: "けいざい", en: "economics (major)", tags: ["major"] },
+  { id: "v1-33", chapter: 1, jp: "こうがく", en: "engineering (major)", tags: ["major"] },
+  { id: "v1-34", chapter: 1, jp: "こくさいかんけい", en: "international relations (major)", tags: ["major"] },
+  { id: "v1-35", chapter: 1, jp: "せいじ", en: "politics (major)", tags: ["major"] },
+  { id: "v1-36", chapter: 1, jp: "せいぶつがく", en: "biology (major)", tags: ["major"] },
+  { id: "v1-37", chapter: 1, jp: "ビジネス", en: "business (major)", tags: ["major"] },
+  { id: "v1-38", chapter: 1, jp: "ぶんがく", en: "literature (major)", tags: ["major"] },
+  { id: "v1-39", chapter: 1, jp: "れきし", en: "history (major)", tags: ["major"] },
+  { id: "v1-40", chapter: 1, jp: "いしゃ", en: "doctor", tags: ["occupation"] },
+  { id: "v1-41", chapter: 1, jp: "かんごし", en: "nurse", tags: ["occupation"] },
   { id: "v1-42", chapter: 1, jp: "こうこうせい", en: "high school student" },
-  { id: "v1-43", chapter: 1, jp: "しゅふ", en: "housewife" },
+  { id: "v1-43", chapter: 1, jp: "しゅふ", en: "housewife", tags: ["occupation"] },
   { id: "v1-44", chapter: 1, jp: "だいがくいんせい", en: "graduate student" },
-  { id: "v1-45", chapter: 1, jp: "べんごし", en: "lawyer" },
+  { id: "v1-45", chapter: 1, jp: "べんごし", en: "lawyer", tags: ["occupation"] },
   { id: "v1-46", chapter: 1, jp: "おかあさん", en: "mother" },
   { id: "v1-47", chapter: 1, jp: "おとうさん", en: "father" },
   { id: "v1-48", chapter: 1, jp: "おねえさん", en: "older sister" },
   { id: "v1-49", chapter: 1, jp: "おにいさん", en: "older brother" },
   { id: "v1-50", chapter: 1, jp: "いもうと", en: "younger sister" },
   { id: "v1-51", chapter: 1, jp: "おとうと", en: "younger brother" },
-  { id: "v1-52", chapter: 1, jp: "かいしゃいん", en: "office worker" },
+  { id: "v1-52", chapter: 1, jp: "かいしゃいん", en: "office worker", tags: ["occupation"] },
 
   { id: "v2-1", chapter: 2, jp: "これ", en: "this one" },
   { id: "v2-2", chapter: 2, jp: "それ", en: "that one" },
@@ -458,34 +506,34 @@ const VOCAB_ITEMS = [
   { id: "v2-11", chapter: 2, jp: "あそこ", en: "over there" },
   { id: "v2-12", chapter: 2, jp: "どこ", en: "where" },
   { id: "v2-13", chapter: 2, jp: "だれ", en: "who" },
-  { id: "v2-14", chapter: 2, jp: "おいしい", en: "delicious" },
+  { id: "v2-14", chapter: 2, jp: "おいしい", en: "delicious", tags: ["iAdj"] },
   { id: "v2-15", chapter: 2, jp: "さかな", en: "fish" },
   { id: "v2-16", chapter: 2, jp: "とんかつ", en: "pork cutlet" },
   { id: "v2-17", chapter: 2, jp: "にく", en: "meat" },
   { id: "v2-18", chapter: 2, jp: "メニュー", en: "menu" },
   { id: "v2-19", chapter: 2, jp: "やさい", en: "vegetable" },
-  { id: "v2-20", chapter: 2, jp: "かさ", en: "umbrella" },
-  { id: "v2-21", chapter: 2, jp: "かばん", en: "bag" },
+  { id: "v2-20", chapter: 2, jp: "かさ", en: "umbrella", tags: ["object"] },
+  { id: "v2-21", chapter: 2, jp: "かばん", en: "bag", tags: ["object"] },
   { id: "v2-22", chapter: 2, jp: "くつ", en: "shoes" },
-  { id: "v2-23", chapter: 2, jp: "さいふ", en: "wallet" },
+  { id: "v2-23", chapter: 2, jp: "さいふ", en: "wallet", tags: ["object"] },
   { id: "v2-24", chapter: 2, jp: "ジーンズ", en: "jeans" },
-  { id: "v2-25", chapter: 2, jp: "じてんしゃ", en: "bicycle" },
-  { id: "v2-26", chapter: 2, jp: "しんぶん", en: "newspaper" },
-  { id: "v2-27", chapter: 2, jp: "スマホ", en: "smartphone; mobile" },
-  { id: "v2-28", chapter: 2, jp: "とけい", en: "watch; clock" },
-  { id: "v2-29", chapter: 2, jp: "ノート", en: "notebook" },
-  { id: "v2-30", chapter: 2, jp: "ペン", en: "pen" },
-  { id: "v2-31", chapter: 2, jp: "ぼうし", en: "hat; cap" },
-  { id: "v2-32", chapter: 2, jp: "ほん", en: "book" },
-  { id: "v2-33", chapter: 2, jp: "ぎんこう", en: "bank" },
-  { id: "v2-34", chapter: 2, jp: "コンビニ", en: "convenience store" },
+  { id: "v2-25", chapter: 2, jp: "じてんしゃ", en: "bicycle", tags: ["object"] },
+  { id: "v2-26", chapter: 2, jp: "しんぶん", en: "newspaper", tags: ["object"] },
+  { id: "v2-27", chapter: 2, jp: "スマホ", en: "smartphone; mobile", tags: ["object"] },
+  { id: "v2-28", chapter: 2, jp: "とけい", en: "watch; clock", tags: ["object"] },
+  { id: "v2-29", chapter: 2, jp: "ノート", en: "notebook", tags: ["object"] },
+  { id: "v2-30", chapter: 2, jp: "ペン", en: "pen", tags: ["object"] },
+  { id: "v2-31", chapter: 2, jp: "ぼうし", en: "hat; cap", tags: ["object"] },
+  { id: "v2-32", chapter: 2, jp: "ほん", en: "book", tags: ["object"] },
+  { id: "v2-33", chapter: 2, jp: "ぎんこう", en: "bank", tags: ["place"] },
+  { id: "v2-34", chapter: 2, jp: "コンビニ", en: "convenience store", tags: ["place"] },
   { id: "v2-35", chapter: 2, jp: "トイレ", en: "toilet; restroom" },
-  { id: "v2-36", chapter: 2, jp: "としょかん", en: "library" },
-  { id: "v2-37", chapter: 2, jp: "ゆうびんきょく", en: "post office" },
+  { id: "v2-36", chapter: 2, jp: "としょかん", en: "library", tags: ["place"] },
+  { id: "v2-37", chapter: 2, jp: "ゆうびんきょく", en: "post office", tags: ["place"] },
   { id: "v2-38", chapter: 2, jp: "えいご", en: "English (language)" },
   { id: "v2-39", chapter: 2, jp: "いくら", en: "how much" },
   { id: "v2-40", chapter: 2, jp: "えん", en: "…yen" },
-  { id: "v2-41", chapter: 2, jp: "たかい", en: "expensive; high" },
+  { id: "v2-41", chapter: 2, jp: "たかい", en: "expensive; high", tags: ["iAdj"] },
   { id: "v2-42", chapter: 2, jp: "いらっしゃいませ", en: "Welcome (to our store)" },
   { id: "v2-43", chapter: 2, jp: "おねがいします", en: "…please" },
   { id: "v2-44", chapter: 2, jp: "ください", en: "Please give me…" },
@@ -511,8 +559,8 @@ const VOCAB_ITEMS = [
   { id: "v3-16", chapter: 3, jp: "ばんごはん", en: "dinner" },
   { id: "v3-17", chapter: 3, jp: "いえ", en: "home; house" },
   { id: "v3-18", chapter: 3, jp: "うち", en: "home; house; my place" },
-  { id: "v3-19", chapter: 3, jp: "がっこう", en: "school" },
-  { id: "v3-20", chapter: 3, jp: "カフェ", en: "cafe" },
+  { id: "v3-19", chapter: 3, jp: "がっこう", en: "school", tags: ["place"] },
+  { id: "v3-20", chapter: 3, jp: "カフェ", en: "cafe", tags: ["place"] },
   { id: "v3-21", chapter: 3, jp: "あした", en: "tomorrow" },
   { id: "v3-22", chapter: 3, jp: "きょう", en: "today" },
   { id: "v3-23", chapter: 3, jp: "あさ", en: "morning" },
@@ -525,15 +573,15 @@ const VOCAB_ITEMS = [
   { id: "v3-30", chapter: 3, jp: "いつ", en: "when" },
   { id: "v3-31", chapter: 3, jp: "ごろ", en: "at about…" },
   { id: "v3-32", chapter: 3, jp: "いく", en: "to go" },
-  { id: "v3-33", chapter: 3, jp: "かえる", en: "to go back; to return" },
-  { id: "v3-34", chapter: 3, jp: "きく", en: "to listen; to hear" },
-  { id: "v3-35", chapter: 3, jp: "のむ", en: "to drink" },
-  { id: "v3-36", chapter: 3, jp: "はなす", en: "to speak; to talk" },
-  { id: "v3-37", chapter: 3, jp: "よむ", en: "to read" },
-  { id: "v3-38", chapter: 3, jp: "おきる", en: "to get up" },
-  { id: "v3-39", chapter: 3, jp: "たべる", en: "to eat" },
-  { id: "v3-40", chapter: 3, jp: "ねる", en: "to sleep; to go to sleep" },
-  { id: "v3-41", chapter: 3, jp: "みる", en: "to see; to look at; to watch" },
+  { id: "v3-33", chapter: 3, jp: "かえる", en: "to go back; to return", tags: ["godanVerb"] },
+  { id: "v3-34", chapter: 3, jp: "きく", en: "to listen; to hear", tags: ["godanVerb"] },
+  { id: "v3-35", chapter: 3, jp: "のむ", en: "to drink", tags: ["godanVerb"] },
+  { id: "v3-36", chapter: 3, jp: "はなす", en: "to speak; to talk", tags: ["godanVerb"] },
+  { id: "v3-37", chapter: 3, jp: "よむ", en: "to read", tags: ["godanVerb"] },
+  { id: "v3-38", chapter: 3, jp: "おきる", en: "to get up", tags: ["ichidanVerb"] },
+  { id: "v3-39", chapter: 3, jp: "たべる", en: "to eat", tags: ["ichidanVerb"] },
+  { id: "v3-40", chapter: 3, jp: "ねる", en: "to sleep; to go to sleep", tags: ["ichidanVerb"] },
+  { id: "v3-41", chapter: 3, jp: "みる", en: "to see; to look at; to watch", tags: ["ichidanVerb"] },
   { id: "v3-42", chapter: 3, jp: "くる", en: "to come" },
   { id: "v3-43", chapter: 3, jp: "する", en: "to do" },
   { id: "v3-44", chapter: 3, jp: "べんきょうする", en: "to study" },
@@ -554,10 +602,10 @@ const VOCAB_ITEMS = [
   { id: "v4-2", chapter: 4, jp: "アルバイト", en: "part-time job" },
   { id: "v4-3", chapter: 4, jp: "かいもの", en: "shopping" },
   { id: "v4-4", chapter: 4, jp: "クラス", en: "class" },
-  { id: "v4-5", chapter: 4, jp: "いぬ", en: "dog" },
-  { id: "v4-6", chapter: 4, jp: "ねこ", en: "cat" },
-  { id: "v4-7", chapter: 4, jp: "ひと", en: "person" },
-  { id: "v4-8", chapter: 4, jp: "こども", en: "child" },
+  { id: "v4-5", chapter: 4, jp: "いぬ", en: "dog", tags: ["living"] },
+  { id: "v4-6", chapter: 4, jp: "ねこ", en: "cat", tags: ["living"] },
+  { id: "v4-7", chapter: 4, jp: "ひと", en: "person", tags: ["living"] },
+  { id: "v4-8", chapter: 4, jp: "こども", en: "child", tags: ["living"] },
   { id: "v4-9", chapter: 4, jp: "あなた", en: "you" },
   { id: "v4-10", chapter: 4, jp: "いす", en: "chair" },
   { id: "v4-11", chapter: 4, jp: "つくえ", en: "desk" },
@@ -566,14 +614,14 @@ const VOCAB_ITEMS = [
   { id: "v4-14", chapter: 4, jp: "レポート", en: "(term) paper" },
   { id: "v4-15", chapter: 4, jp: "ごはん", en: "rice; meal" },
   { id: "v4-16", chapter: 4, jp: "パン", en: "bread" },
-  { id: "v4-17", chapter: 4, jp: "おてら", en: "temple" },
-  { id: "v4-18", chapter: 4, jp: "こうえん", en: "park" },
-  { id: "v4-19", chapter: 4, jp: "スーパー", en: "supermarket" },
+  { id: "v4-17", chapter: 4, jp: "おてら", en: "temple", tags: ["place"] },
+  { id: "v4-18", chapter: 4, jp: "こうえん", en: "park", tags: ["place"] },
+  { id: "v4-19", chapter: 4, jp: "スーパー", en: "supermarket", tags: ["place"] },
   { id: "v4-20", chapter: 4, jp: "バスてい", en: "bus stop" },
-  { id: "v4-21", chapter: 4, jp: "びょういん", en: "hospital" },
-  { id: "v4-22", chapter: 4, jp: "ホテル", en: "hotel" },
+  { id: "v4-21", chapter: 4, jp: "びょういん", en: "hospital", tags: ["place"] },
+  { id: "v4-22", chapter: 4, jp: "ホテル", en: "hotel", tags: ["place"] },
   { id: "v4-23", chapter: 4, jp: "まち", en: "town; city" },
-  { id: "v4-24", chapter: 4, jp: "レストラン", en: "restaurant" },
+  { id: "v4-24", chapter: 4, jp: "レストラン", en: "restaurant", tags: ["place"] },
   { id: "v4-25", chapter: 4, jp: "きのう", en: "yesterday" },
   { id: "v4-26", chapter: 4, jp: "いちじかん", en: "one hour" },
   { id: "v4-27", chapter: 4, jp: "せんしゅう", en: "last week" },
@@ -583,13 +631,13 @@ const VOCAB_ITEMS = [
   { id: "v4-31", chapter: 4, jp: "すいようび", en: "Wednesday" },
   { id: "v4-32", chapter: 4, jp: "もくようび", en: "Thursday" },
   { id: "v4-33", chapter: 4, jp: "きんようび", en: "Friday" },
-  { id: "v4-34", chapter: 4, jp: "あう", en: "to meet; to see (a person)" },
+  { id: "v4-34", chapter: 4, jp: "あう", en: "to meet; to see (a person)", tags: ["godanVerb"] },
   { id: "v4-35", chapter: 4, jp: "ある", en: "there is… (non-living thing)" },
-  { id: "v4-36", chapter: 4, jp: "かう", en: "to buy" },
-  { id: "v4-37", chapter: 4, jp: "かく", en: "to write" },
-  { id: "v4-38", chapter: 4, jp: "とる", en: "to take (a picture)" },
-  { id: "v4-39", chapter: 4, jp: "まつ", en: "to wait" },
-  { id: "v4-40", chapter: 4, jp: "わかる", en: "to understand" },
+  { id: "v4-36", chapter: 4, jp: "かう", en: "to buy", tags: ["godanVerb"] },
+  { id: "v4-37", chapter: 4, jp: "かく", en: "to write", tags: ["godanVerb"] },
+  { id: "v4-38", chapter: 4, jp: "とる", en: "to take (a picture)", tags: ["godanVerb"] },
+  { id: "v4-39", chapter: 4, jp: "まつ", en: "to wait", tags: ["godanVerb"] },
+  { id: "v4-40", chapter: 4, jp: "わかる", en: "to understand", tags: ["godanVerb"] },
   { id: "v4-41", chapter: 4, jp: "いる", en: "there is… (living thing)" },
   { id: "v4-42", chapter: 4, jp: "ぐらい", en: "about (approx. amount)" },
   { id: "v4-43", chapter: 4, jp: "ごめんなさい", en: "I'm sorry" },
@@ -626,21 +674,21 @@ const VOCAB_ITEMS = [
   { id: "v5-13", chapter: 5, jp: "たんじょうび", en: "birthday" },
   { id: "v5-14", chapter: 5, jp: "へや", en: "room" },
   { id: "v5-15", chapter: 5, jp: "ぼく", en: "I (used by men)" },
-  { id: "v5-16", chapter: 5, jp: "あたらしい", en: "new" },
-  { id: "v5-17", chapter: 5, jp: "ふるい", en: "old (things)" },
-  { id: "v5-18", chapter: 5, jp: "あつい", en: "hot" },
-  { id: "v5-19", chapter: 5, jp: "さむい", en: "cold" },
-  { id: "v5-20", chapter: 5, jp: "いそがしい", en: "busy" },
-  { id: "v5-21", chapter: 5, jp: "おおきい", en: "large" },
-  { id: "v5-22", chapter: 5, jp: "ちいさい", en: "small" },
-  { id: "v5-23", chapter: 5, jp: "おもしろい", en: "interesting; funny" },
-  { id: "v5-24", chapter: 5, jp: "つまらない", en: "boring" },
-  { id: "v5-25", chapter: 5, jp: "やさしい", en: "easy (problem); kind (person)" },
-  { id: "v5-26", chapter: 5, jp: "むずかしい", en: "difficult" },
+  { id: "v5-16", chapter: 5, jp: "あたらしい", en: "new", tags: ["iAdj"] },
+  { id: "v5-17", chapter: 5, jp: "ふるい", en: "old (things)", tags: ["iAdj"] },
+  { id: "v5-18", chapter: 5, jp: "あつい", en: "hot", tags: ["iAdj"] },
+  { id: "v5-19", chapter: 5, jp: "さむい", en: "cold", tags: ["iAdj"] },
+  { id: "v5-20", chapter: 5, jp: "いそがしい", en: "busy", tags: ["iAdj"] },
+  { id: "v5-21", chapter: 5, jp: "おおきい", en: "large", tags: ["iAdj"] },
+  { id: "v5-22", chapter: 5, jp: "ちいさい", en: "small", tags: ["iAdj"] },
+  { id: "v5-23", chapter: 5, jp: "おもしろい", en: "interesting; funny", tags: ["iAdj"] },
+  { id: "v5-24", chapter: 5, jp: "つまらない", en: "boring", tags: ["iAdj"] },
+  { id: "v5-25", chapter: 5, jp: "やさしい", en: "easy (problem); kind (person)", tags: ["iAdj"] },
+  { id: "v5-26", chapter: 5, jp: "むずかしい", en: "difficult", tags: ["iAdj"] },
   { id: "v5-27", chapter: 5, jp: "かっこいい", en: "good-looking; cool" },
-  { id: "v5-28", chapter: 5, jp: "こわい", en: "frightening" },
-  { id: "v5-29", chapter: 5, jp: "たのしい", en: "fun" },
-  { id: "v5-30", chapter: 5, jp: "やすい", en: "inexpensive; cheap" },
+  { id: "v5-28", chapter: 5, jp: "こわい", en: "frightening", tags: ["iAdj"] },
+  { id: "v5-29", chapter: 5, jp: "たのしい", en: "fun", tags: ["iAdj"] },
+  { id: "v5-30", chapter: 5, jp: "やすい", en: "inexpensive; cheap", tags: ["iAdj"] },
   { id: "v5-31", chapter: 5, jp: "すき", en: "fond of; to like" },
   { id: "v5-32", chapter: 5, jp: "きらい", en: "disgusted with; to dislike" },
   { id: "v5-33", chapter: 5, jp: "だいすき", en: "very fond of; to love" },
@@ -650,9 +698,9 @@ const VOCAB_ITEMS = [
   { id: "v5-37", chapter: 5, jp: "しずか", en: "quiet" },
   { id: "v5-38", chapter: 5, jp: "にぎやか", en: "lively" },
   { id: "v5-39", chapter: 5, jp: "ひま", en: "not busy; free (time)" },
-  { id: "v5-40", chapter: 5, jp: "およぐ", en: "to swim" },
-  { id: "v5-41", chapter: 5, jp: "のる", en: "to ride; to board" },
-  { id: "v5-42", chapter: 5, jp: "やる", en: "to do; to perform" },
+  { id: "v5-40", chapter: 5, jp: "およぐ", en: "to swim", tags: ["godanVerb"] },
+  { id: "v5-41", chapter: 5, jp: "のる", en: "to ride; to board", tags: ["godanVerb"] },
+  { id: "v5-42", chapter: 5, jp: "やる", en: "to do; to perform", tags: ["godanVerb"] },
   { id: "v5-43", chapter: 5, jp: "でかける", en: "to go out" },
   { id: "v5-44", chapter: 5, jp: "いっしょに", en: "together" },
   { id: "v5-45", chapter: 5, jp: "すごく", en: "extremely" },
@@ -678,27 +726,27 @@ const VOCAB_ITEMS = [
   { id: "v6-16", chapter: 6, jp: "らいねん", en: "next year" },
   { id: "v6-17", chapter: 6, jp: "よる", en: "night" },
   { id: "v6-18", chapter: 6, jp: "たいへん", en: "tough (situation)" },
-  { id: "v6-19", chapter: 6, jp: "あそぶ", en: "to play; to spend time pleasantly" },
-  { id: "v6-20", chapter: 6, jp: "いそぐ", en: "to hurry" },
-  { id: "v6-21", chapter: 6, jp: "かえす", en: "to return (a thing)" },
-  { id: "v6-22", chapter: 6, jp: "けす", en: "to turn off; to erase" },
-  { id: "v6-23", chapter: 6, jp: "しぬ", en: "to die" },
-  { id: "v6-24", chapter: 6, jp: "すわる", en: "to sit down" },
-  { id: "v6-25", chapter: 6, jp: "たつ", en: "to stand up" },
+  { id: "v6-19", chapter: 6, jp: "あそぶ", en: "to play; to spend time pleasantly", tags: ["godanVerb"] },
+  { id: "v6-20", chapter: 6, jp: "いそぐ", en: "to hurry", tags: ["godanVerb"] },
+  { id: "v6-21", chapter: 6, jp: "かえす", en: "to return (a thing)", tags: ["godanVerb"] },
+  { id: "v6-22", chapter: 6, jp: "けす", en: "to turn off; to erase", tags: ["godanVerb"] },
+  { id: "v6-23", chapter: 6, jp: "しぬ", en: "to die", tags: ["godanVerb"] },
+  { id: "v6-24", chapter: 6, jp: "すわる", en: "to sit down", tags: ["godanVerb"] },
+  { id: "v6-25", chapter: 6, jp: "たつ", en: "to stand up", tags: ["godanVerb"] },
   { id: "v6-26", chapter: 6, jp: "たばこをすう", en: "to smoke" },
-  { id: "v6-27", chapter: 6, jp: "つかう", en: "to use" },
-  { id: "v6-28", chapter: 6, jp: "てつだう", en: "to help" },
-  { id: "v6-29", chapter: 6, jp: "はいる", en: "to enter" },
-  { id: "v6-30", chapter: 6, jp: "もつ", en: "to carry; to hold" },
-  { id: "v6-31", chapter: 6, jp: "やすむ", en: "to be absent; to rest" },
-  { id: "v6-32", chapter: 6, jp: "あける", en: "to open" },
-  { id: "v6-33", chapter: 6, jp: "しめる", en: "to close" },
-  { id: "v6-34", chapter: 6, jp: "おしえる", en: "to teach; to instruct" },
-  { id: "v6-35", chapter: 6, jp: "わすれる", en: "to forget; to leave behind" },
-  { id: "v6-36", chapter: 6, jp: "おりる", en: "to get off" },
-  { id: "v6-37", chapter: 6, jp: "かりる", en: "to borrow" },
+  { id: "v6-27", chapter: 6, jp: "つかう", en: "to use", tags: ["godanVerb"] },
+  { id: "v6-28", chapter: 6, jp: "てつだう", en: "to help", tags: ["godanVerb"] },
+  { id: "v6-29", chapter: 6, jp: "はいる", en: "to enter", tags: ["godanVerb"] },
+  { id: "v6-30", chapter: 6, jp: "もつ", en: "to carry; to hold", tags: ["godanVerb"] },
+  { id: "v6-31", chapter: 6, jp: "やすむ", en: "to be absent; to rest", tags: ["godanVerb"] },
+  { id: "v6-32", chapter: 6, jp: "あける", en: "to open", tags: ["ichidanVerb"] },
+  { id: "v6-33", chapter: 6, jp: "しめる", en: "to close", tags: ["ichidanVerb"] },
+  { id: "v6-34", chapter: 6, jp: "おしえる", en: "to teach; to instruct", tags: ["ichidanVerb"] },
+  { id: "v6-35", chapter: 6, jp: "わすれる", en: "to forget; to leave behind", tags: ["ichidanVerb"] },
+  { id: "v6-36", chapter: 6, jp: "おりる", en: "to get off", tags: ["ichidanVerb"] },
+  { id: "v6-37", chapter: 6, jp: "かりる", en: "to borrow", tags: ["ichidanVerb"] },
   { id: "v6-38", chapter: 6, jp: "シャワーをあびる", en: "to take a shower" },
-  { id: "v6-39", chapter: 6, jp: "つける", en: "to turn on" },
+  { id: "v6-39", chapter: 6, jp: "つける", en: "to turn on", tags: ["ichidanVerb"] },
   { id: "v6-40", chapter: 6, jp: "でんわする", en: "to call" },
   { id: "v6-41", chapter: 6, jp: "つれてくる", en: "to bring (a person)" },
   { id: "v6-42", chapter: 6, jp: "もってくる", en: "to bring (a thing)" },
@@ -707,8 +755,8 @@ const VOCAB_ITEMS = [
   { id: "v6-45", chapter: 6, jp: "ゆっくり", en: "slowly; leisurely; unhurriedly" },
   { id: "v6-46", chapter: 6, jp: "けっこうです", en: "That would be fine; That wouldn't be necessary" },
   { id: "v6-47", chapter: 6, jp: "ほんとうですか", en: "Really?" },
-  { id: "v6-48", chapter: 6, jp: "まがる", en: "to turn (direction)" },
-  { id: "v6-49", chapter: 6, jp: "わたる", en: "to cross" },
+  { id: "v6-48", chapter: 6, jp: "まがる", en: "to turn (direction)", tags: ["godanVerb"] },
+  { id: "v6-49", chapter: 6, jp: "わたる", en: "to cross", tags: ["godanVerb"] },
 
   { id: "v7-1", chapter: 7, jp: "かぞく", en: "family" },
   { id: "v7-2", chapter: 7, jp: "おじいさん", en: "grandfather; old man" },
@@ -724,15 +772,15 @@ const VOCAB_ITEMS = [
   { id: "v7-12", chapter: 7, jp: "め", en: "eye" },
   { id: "v7-13", chapter: 7, jp: "くち", en: "mouth" },
   { id: "v7-14", chapter: 7, jp: "かみ", en: "hair" },
-  { id: "v7-15", chapter: 7, jp: "デパート", en: "department store" },
-  { id: "v7-16", chapter: 7, jp: "しょくどう", en: "cafeteria; dining commons" },
+  { id: "v7-15", chapter: 7, jp: "デパート", en: "department store", tags: ["place"] },
+  { id: "v7-16", chapter: 7, jp: "しょくどう", en: "cafeteria; dining commons", tags: ["place"] },
   { id: "v7-17", chapter: 7, jp: "めがね", en: "glasses" },
   { id: "v7-18", chapter: 7, jp: "ふとる", en: "to gain weight; to be on the heavy side" },
   { id: "v7-19", chapter: 7, jp: "やせる", en: "to lose weight; to be thin" },
   { id: "v7-20", chapter: 7, jp: "しっている", en: "to know" },
   { id: "v7-21", chapter: 7, jp: "はたらく", en: "to work" },
-  { id: "v7-22", chapter: 7, jp: "ながい", en: "long" },
-  { id: "v7-23", chapter: 7, jp: "みじかい", en: "short (length)" },
+  { id: "v7-22", chapter: 7, jp: "ながい", en: "long", tags: ["iAdj"] },
+  { id: "v7-23", chapter: 7, jp: "みじかい", en: "short (length)", tags: ["iAdj"] },
   { id: "v7-24", chapter: 7, jp: "せがたかい", en: "tall (stature)" },
   { id: "v7-25", chapter: 7, jp: "せがひくい", en: "short (stature)" },
   { id: "v7-26", chapter: 7, jp: "あたまがいい", en: "bright; smart; clever" },
@@ -752,12 +800,137 @@ const VOCAB_CHAPTER_TITLES = {
   6: "ロバートさんの一日 — A Day in Robert's Life", 7: "家族の写真 — Family Picture",
 };
 
+/* ============================================================
+   KANA DATA — full hiragana and katakana, base gojūon plus
+   dakuten (゛) and handakuten (゜) forms. Grouped into four
+   pseudo-chapters so the same chapter-picker UI works here too.
+   ============================================================ */
+const KANA_ITEMS = [
+  // Hiragana — base 46 (chapter 1)
+  { id: "hb-a", chapter: 1, kana: "あ", romaji: "a", script: "hiragana" }, { id: "hb-i", chapter: 1, kana: "い", romaji: "i", script: "hiragana" },
+  { id: "hb-u", chapter: 1, kana: "う", romaji: "u", script: "hiragana" }, { id: "hb-e", chapter: 1, kana: "え", romaji: "e", script: "hiragana" },
+  { id: "hb-o", chapter: 1, kana: "お", romaji: "o", script: "hiragana" },
+  { id: "hb-ka", chapter: 1, kana: "か", romaji: "ka", script: "hiragana" }, { id: "hb-ki", chapter: 1, kana: "き", romaji: "ki", script: "hiragana" },
+  { id: "hb-ku", chapter: 1, kana: "く", romaji: "ku", script: "hiragana" }, { id: "hb-ke", chapter: 1, kana: "け", romaji: "ke", script: "hiragana" },
+  { id: "hb-ko", chapter: 1, kana: "こ", romaji: "ko", script: "hiragana" },
+  { id: "hb-sa", chapter: 1, kana: "さ", romaji: "sa", script: "hiragana" }, { id: "hb-shi", chapter: 1, kana: "し", romaji: "shi", script: "hiragana" },
+  { id: "hb-su", chapter: 1, kana: "す", romaji: "su", script: "hiragana" }, { id: "hb-se", chapter: 1, kana: "せ", romaji: "se", script: "hiragana" },
+  { id: "hb-so", chapter: 1, kana: "そ", romaji: "so", script: "hiragana" },
+  { id: "hb-ta", chapter: 1, kana: "た", romaji: "ta", script: "hiragana" }, { id: "hb-chi", chapter: 1, kana: "ち", romaji: "chi", script: "hiragana" },
+  { id: "hb-tsu", chapter: 1, kana: "つ", romaji: "tsu", script: "hiragana" }, { id: "hb-te", chapter: 1, kana: "て", romaji: "te", script: "hiragana" },
+  { id: "hb-to", chapter: 1, kana: "と", romaji: "to", script: "hiragana" },
+  { id: "hb-na", chapter: 1, kana: "な", romaji: "na", script: "hiragana" }, { id: "hb-ni", chapter: 1, kana: "に", romaji: "ni", script: "hiragana" },
+  { id: "hb-nu", chapter: 1, kana: "ぬ", romaji: "nu", script: "hiragana" }, { id: "hb-ne", chapter: 1, kana: "ね", romaji: "ne", script: "hiragana" },
+  { id: "hb-no", chapter: 1, kana: "の", romaji: "no", script: "hiragana" },
+  { id: "hb-ha", chapter: 1, kana: "は", romaji: "ha", script: "hiragana" }, { id: "hb-hi", chapter: 1, kana: "ひ", romaji: "hi", script: "hiragana" },
+  { id: "hb-fu", chapter: 1, kana: "ふ", romaji: "fu", script: "hiragana" }, { id: "hb-he", chapter: 1, kana: "へ", romaji: "he", script: "hiragana" },
+  { id: "hb-ho", chapter: 1, kana: "ほ", romaji: "ho", script: "hiragana" },
+  { id: "hb-ma", chapter: 1, kana: "ま", romaji: "ma", script: "hiragana" }, { id: "hb-mi", chapter: 1, kana: "み", romaji: "mi", script: "hiragana" },
+  { id: "hb-mu", chapter: 1, kana: "む", romaji: "mu", script: "hiragana" }, { id: "hb-me", chapter: 1, kana: "め", romaji: "me", script: "hiragana" },
+  { id: "hb-mo", chapter: 1, kana: "も", romaji: "mo", script: "hiragana" },
+  { id: "hb-ya", chapter: 1, kana: "や", romaji: "ya", script: "hiragana" }, { id: "hb-yu", chapter: 1, kana: "ゆ", romaji: "yu", script: "hiragana" },
+  { id: "hb-yo", chapter: 1, kana: "よ", romaji: "yo", script: "hiragana" },
+  { id: "hb-ra", chapter: 1, kana: "ら", romaji: "ra", script: "hiragana" }, { id: "hb-ri", chapter: 1, kana: "り", romaji: "ri", script: "hiragana" },
+  { id: "hb-ru", chapter: 1, kana: "る", romaji: "ru", script: "hiragana" }, { id: "hb-re", chapter: 1, kana: "れ", romaji: "re", script: "hiragana" },
+  { id: "hb-ro", chapter: 1, kana: "ろ", romaji: "ro", script: "hiragana" },
+  { id: "hb-wa", chapter: 1, kana: "わ", romaji: "wa", script: "hiragana" }, { id: "hb-wo", chapter: 1, kana: "を", romaji: "wo", script: "hiragana" },
+  { id: "hb-n", chapter: 1, kana: "ん", romaji: "n", script: "hiragana" },
+
+  // Hiragana — dakuten / handakuten (chapter 2)
+  { id: "hd-ga", chapter: 2, kana: "が", romaji: "ga", script: "hiragana" }, { id: "hd-gi", chapter: 2, kana: "ぎ", romaji: "gi", script: "hiragana" },
+  { id: "hd-gu", chapter: 2, kana: "ぐ", romaji: "gu", script: "hiragana" }, { id: "hd-ge", chapter: 2, kana: "げ", romaji: "ge", script: "hiragana" },
+  { id: "hd-go", chapter: 2, kana: "ご", romaji: "go", script: "hiragana" },
+  { id: "hd-za", chapter: 2, kana: "ざ", romaji: "za", script: "hiragana" }, { id: "hd-ji1", chapter: 2, kana: "じ", romaji: "ji", script: "hiragana" },
+  { id: "hd-zu", chapter: 2, kana: "ず", romaji: "zu", script: "hiragana" }, { id: "hd-ze", chapter: 2, kana: "ぜ", romaji: "ze", script: "hiragana" },
+  { id: "hd-zo", chapter: 2, kana: "ぞ", romaji: "zo", script: "hiragana" },
+  { id: "hd-da", chapter: 2, kana: "だ", romaji: "da", script: "hiragana" }, { id: "hd-ji2", chapter: 2, kana: "ぢ", romaji: "ji", script: "hiragana" },
+  { id: "hd-zu2", chapter: 2, kana: "づ", romaji: "zu", script: "hiragana" }, { id: "hd-de", chapter: 2, kana: "で", romaji: "de", script: "hiragana" },
+  { id: "hd-do", chapter: 2, kana: "ど", romaji: "do", script: "hiragana" },
+  { id: "hd-ba", chapter: 2, kana: "ば", romaji: "ba", script: "hiragana" }, { id: "hd-bi", chapter: 2, kana: "び", romaji: "bi", script: "hiragana" },
+  { id: "hd-bu", chapter: 2, kana: "ぶ", romaji: "bu", script: "hiragana" }, { id: "hd-be", chapter: 2, kana: "べ", romaji: "be", script: "hiragana" },
+  { id: "hd-bo", chapter: 2, kana: "ぼ", romaji: "bo", script: "hiragana" },
+  { id: "hd-pa", chapter: 2, kana: "ぱ", romaji: "pa", script: "hiragana" }, { id: "hd-pi", chapter: 2, kana: "ぴ", romaji: "pi", script: "hiragana" },
+  { id: "hd-pu", chapter: 2, kana: "ぷ", romaji: "pu", script: "hiragana" }, { id: "hd-pe", chapter: 2, kana: "ぺ", romaji: "pe", script: "hiragana" },
+  { id: "hd-po", chapter: 2, kana: "ぽ", romaji: "po", script: "hiragana" },
+
+  // Katakana — base 46 (chapter 3)
+  { id: "kb-a", chapter: 3, kana: "ア", romaji: "a", script: "katakana" }, { id: "kb-i", chapter: 3, kana: "イ", romaji: "i", script: "katakana" },
+  { id: "kb-u", chapter: 3, kana: "ウ", romaji: "u", script: "katakana" }, { id: "kb-e", chapter: 3, kana: "エ", romaji: "e", script: "katakana" },
+  { id: "kb-o", chapter: 3, kana: "オ", romaji: "o", script: "katakana" },
+  { id: "kb-ka", chapter: 3, kana: "カ", romaji: "ka", script: "katakana" }, { id: "kb-ki", chapter: 3, kana: "キ", romaji: "ki", script: "katakana" },
+  { id: "kb-ku", chapter: 3, kana: "ク", romaji: "ku", script: "katakana" }, { id: "kb-ke", chapter: 3, kana: "ケ", romaji: "ke", script: "katakana" },
+  { id: "kb-ko", chapter: 3, kana: "コ", romaji: "ko", script: "katakana" },
+  { id: "kb-sa", chapter: 3, kana: "サ", romaji: "sa", script: "katakana" }, { id: "kb-shi", chapter: 3, kana: "シ", romaji: "shi", script: "katakana" },
+  { id: "kb-su", chapter: 3, kana: "ス", romaji: "su", script: "katakana" }, { id: "kb-se", chapter: 3, kana: "セ", romaji: "se", script: "katakana" },
+  { id: "kb-so", chapter: 3, kana: "ソ", romaji: "so", script: "katakana" },
+  { id: "kb-ta", chapter: 3, kana: "タ", romaji: "ta", script: "katakana" }, { id: "kb-chi", chapter: 3, kana: "チ", romaji: "chi", script: "katakana" },
+  { id: "kb-tsu", chapter: 3, kana: "ツ", romaji: "tsu", script: "katakana" }, { id: "kb-te", chapter: 3, kana: "テ", romaji: "te", script: "katakana" },
+  { id: "kb-to", chapter: 3, kana: "ト", romaji: "to", script: "katakana" },
+  { id: "kb-na", chapter: 3, kana: "ナ", romaji: "na", script: "katakana" }, { id: "kb-ni", chapter: 3, kana: "ニ", romaji: "ni", script: "katakana" },
+  { id: "kb-nu", chapter: 3, kana: "ヌ", romaji: "nu", script: "katakana" }, { id: "kb-ne", chapter: 3, kana: "ネ", romaji: "ne", script: "katakana" },
+  { id: "kb-no", chapter: 3, kana: "ノ", romaji: "no", script: "katakana" },
+  { id: "kb-ha", chapter: 3, kana: "ハ", romaji: "ha", script: "katakana" }, { id: "kb-hi", chapter: 3, kana: "ヒ", romaji: "hi", script: "katakana" },
+  { id: "kb-fu", chapter: 3, kana: "フ", romaji: "fu", script: "katakana" }, { id: "kb-he", chapter: 3, kana: "ヘ", romaji: "he", script: "katakana" },
+  { id: "kb-ho", chapter: 3, kana: "ホ", romaji: "ho", script: "katakana" },
+  { id: "kb-ma", chapter: 3, kana: "マ", romaji: "ma", script: "katakana" }, { id: "kb-mi", chapter: 3, kana: "ミ", romaji: "mi", script: "katakana" },
+  { id: "kb-mu", chapter: 3, kana: "ム", romaji: "mu", script: "katakana" }, { id: "kb-me", chapter: 3, kana: "メ", romaji: "me", script: "katakana" },
+  { id: "kb-mo", chapter: 3, kana: "モ", romaji: "mo", script: "katakana" },
+  { id: "kb-ya", chapter: 3, kana: "ヤ", romaji: "ya", script: "katakana" }, { id: "kb-yu", chapter: 3, kana: "ユ", romaji: "yu", script: "katakana" },
+  { id: "kb-yo", chapter: 3, kana: "ヨ", romaji: "yo", script: "katakana" },
+  { id: "kb-ra", chapter: 3, kana: "ラ", romaji: "ra", script: "katakana" }, { id: "kb-ri", chapter: 3, kana: "リ", romaji: "ri", script: "katakana" },
+  { id: "kb-ru", chapter: 3, kana: "ル", romaji: "ru", script: "katakana" }, { id: "kb-re", chapter: 3, kana: "レ", romaji: "re", script: "katakana" },
+  { id: "kb-ro", chapter: 3, kana: "ロ", romaji: "ro", script: "katakana" },
+  { id: "kb-wa", chapter: 3, kana: "ワ", romaji: "wa", script: "katakana" }, { id: "kb-wo", chapter: 3, kana: "ヲ", romaji: "wo", script: "katakana" },
+  { id: "kb-n", chapter: 3, kana: "ン", romaji: "n", script: "katakana" },
+
+  // Katakana — dakuten / handakuten (chapter 4)
+  { id: "kd-ga", chapter: 4, kana: "ガ", romaji: "ga", script: "katakana" }, { id: "kd-gi", chapter: 4, kana: "ギ", romaji: "gi", script: "katakana" },
+  { id: "kd-gu", chapter: 4, kana: "グ", romaji: "gu", script: "katakana" }, { id: "kd-ge", chapter: 4, kana: "ゲ", romaji: "ge", script: "katakana" },
+  { id: "kd-go", chapter: 4, kana: "ゴ", romaji: "go", script: "katakana" },
+  { id: "kd-za", chapter: 4, kana: "ザ", romaji: "za", script: "katakana" }, { id: "kd-ji1", chapter: 4, kana: "ジ", romaji: "ji", script: "katakana" },
+  { id: "kd-zu", chapter: 4, kana: "ズ", romaji: "zu", script: "katakana" }, { id: "kd-ze", chapter: 4, kana: "ゼ", romaji: "ze", script: "katakana" },
+  { id: "kd-zo", chapter: 4, kana: "ゾ", romaji: "zo", script: "katakana" },
+  { id: "kd-da", chapter: 4, kana: "ダ", romaji: "da", script: "katakana" }, { id: "kd-ji2", chapter: 4, kana: "ヂ", romaji: "ji", script: "katakana" },
+  { id: "kd-zu2", chapter: 4, kana: "ヅ", romaji: "zu", script: "katakana" }, { id: "kd-de", chapter: 4, kana: "デ", romaji: "de", script: "katakana" },
+  { id: "kd-do", chapter: 4, kana: "ド", romaji: "do", script: "katakana" },
+  { id: "kd-ba", chapter: 4, kana: "バ", romaji: "ba", script: "katakana" }, { id: "kd-bi", chapter: 4, kana: "ビ", romaji: "bi", script: "katakana" },
+  { id: "kd-bu", chapter: 4, kana: "ブ", romaji: "bu", script: "katakana" }, { id: "kd-be", chapter: 4, kana: "ベ", romaji: "be", script: "katakana" },
+  { id: "kd-bo", chapter: 4, kana: "ボ", romaji: "bo", script: "katakana" },
+  { id: "kd-pa", chapter: 4, kana: "パ", romaji: "pa", script: "katakana" }, { id: "kd-pi", chapter: 4, kana: "ピ", romaji: "pi", script: "katakana" },
+  { id: "kd-pu", chapter: 4, kana: "プ", romaji: "pu", script: "katakana" }, { id: "kd-pe", chapter: 4, kana: "ペ", romaji: "pe", script: "katakana" },
+  { id: "kd-po", chapter: 4, kana: "ポ", romaji: "po", script: "katakana" },
+];
+
+const KANA_CHAPTER_TITLES = {
+  1: "ひらがな — Basic 46", 2: "ひらがな — Dakuten／Handakuten (゛゜)",
+  3: "カタカナ — Basic 46", 4: "カタカナ — Dakuten／Handakuten (゛゜)",
+};
+
+// Turns a kana character into a quiz item shaped like a grammar/vocab item.
+const buildKanaQuizItem = (k, type, pool) => {
+  const base = { id: k.id, chapter: k.chapter, point: `${k.script === "hiragana" ? "Hiragana" : "Katakana"}` };
+  const sameScript = pool.filter((w) => w.script === k.script && w.id !== k.id);
+  if (type === "mc") {
+    const dir = Math.random() < 0.5 ? "read" : "recognize";
+    if (dir === "read") {
+      const distractors = sampleN(sameScript.filter((w) => w.romaji !== k.romaji), 3).map((w) => w.romaji);
+      return { ...base, type: "mc", sentence: `What sound does「${k.kana}」make?`, answer: k.romaji, options: shuffle([k.romaji, ...distractors]) };
+    }
+    const distractors = sampleN(sameScript, 3).map((w) => w.kana);
+    return { ...base, type: "mc", sentence: `Which character makes the sound "${k.romaji}"?`, answer: k.kana, options: shuffle([k.kana, ...distractors]) };
+  }
+  if (type === "fill") {
+    return { ...base, type: "fill", sentence: `Write the romaji for: ${k.kana}`, answer: k.romaji };
+  }
+  return { ...base, type: "translate", dir: "en-jp", sentence: k.romaji, translation: k.kana };
+};
+
 const UPCOMING_CHAPTERS = [8, 9, 10, 11, 12];
-const SESSION_SIZE_OPTIONS = [10, 20, 30, "all"];
+const SESSION_SIZE_OPTIONS = [10, 15, 20, 25, 30, "all"];
 
 const normalizeJP = (s) =>
   (s || "").replace(/[。、！？\s]/g, "")
-    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).trim();
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).trim().toLowerCase();
 
 const shuffle = (arr) => {
   const a = [...arr];
@@ -803,14 +976,69 @@ const buildVocabQuizItem = (word, type, pool) => {
   return { ...base, type: "translate", dir: "jp-en", sentence: word.jp, translation: word.en };
 };
 
+/* ---------------- conjugation engine ----------------
+   Small rule-based conjugator so template questions can swap in a
+   different verb/adjective and still compute the right answer.
+   Covers regular godan (u-verb) and ichidan (ru-verb) patterns only —
+   words with irregular conjugations (する/くる/いい/かっこいい, and いく's
+   irregular te/ta-form) are simply never tagged for template pools,
+   so this engine never has to handle them.
+------------------------------------------------------- */
+const GODAN_TE_TA = {
+  "う": ["って", "った"], "つ": ["って", "った"], "る": ["って", "った"],
+  "む": ["んで", "んだ"], "ぬ": ["んで", "んだ"], "ぶ": ["んで", "んだ"],
+  "く": ["いて", "いた"], "ぐ": ["いで", "いだ"], "す": ["して", "した"],
+};
+const GODAN_I_ROW = { "う": "い", "つ": "ち", "る": "り", "む": "み", "ぬ": "に", "ぶ": "び", "く": "き", "ぐ": "ぎ", "す": "し" };
+
+const teForm = (word) => {
+  const last = word.slice(-1);
+  const pair = GODAN_TE_TA[last];
+  return pair ? word.slice(0, -1) + pair[0] : word.slice(0, -1) + "て"; // ichidan fallback
+};
+const masuStem = (word) => {
+  const last = word.slice(-1);
+  const iRow = GODAN_I_ROW[last];
+  return iRow ? word.slice(0, -1) + iRow : word.slice(0, -1); // ichidan fallback
+};
+const isIchidan = (word, tags) => tags.includes("ichidanVerb");
+const conjugate = {
+  masu: (word, tags) => (isIchidan(word, tags) ? word.slice(0, -1) : masuStem(word)) + "ます",
+  masuPast: (word, tags) => (isIchidan(word, tags) ? word.slice(0, -1) : masuStem(word)) + "ました",
+  masuNegPast: (word, tags) => (isIchidan(word, tags) ? word.slice(0, -1) : masuStem(word)) + "ませんでした",
+  te: (word, tags) => (isIchidan(word, tags) ? word.slice(0, -1) + "て" : teForm(word)),
+};
+const iAdjPast = (word) => word.slice(0, -1) + "かった";
+const iAdjNeg = (word) => word.slice(0, -1) + "くない";
+
+// Picks a random vocab word tagged with `tag` (or any of several
+// pipe-separated tags), taught by chapter `maxChapter` or earlier.
+const pickVocabWord = (tag, maxChapter) => {
+  const wanted = tag.split("|");
+  const candidates = VOCAB_ITEMS.filter(
+    (w) => w.chapter <= maxChapter && (w.tags || []).some((t) => wanted.includes(t))
+  );
+  return candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : null;
+};
+
 // Grammar items store mc options in a fixed order (answer always
 // listed first in the data for readability) — shuffle them fresh
 // every time a queue is built so the position is never a giveaway.
-const prepGrammarItem = (item) =>
-  item.type === "mc" ? { ...item, options: shuffle(item.options) } : item;
+// Template items (item.template === true) get a fresh word substituted
+// in from the tagged vocab pool and their answer recomputed each time.
+const prepGrammarItem = (item) => {
+  let out = item;
+  if (item.template) {
+    const word = pickVocabWord(item.slot, item.chapter);
+    const built = word ? item.build(word) : item.fallback();
+    out = { id: item.id, chapter: item.chapter, point: item.point, type: item.type, dir: item.dir, ...built };
+  }
+  return out.type === "mc" ? { ...out, options: shuffle(out.options) } : out;
+};
 
 const GRAMMAR_STATS_KEY = "genki-dojo-item-stats-v3";
 const VOCAB_STATS_KEY = "genki-dojo-vocab-stats-v1";
+const KANA_STATS_KEY = "genki-dojo-kana-stats-v1";
 const loadStats = (key) => {
   try {
     const raw = window.localStorage.getItem(key);
@@ -830,8 +1058,9 @@ function App() {
   const [queue, setQueue] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState({ correct: 0, total: 0 });
-  const [grammarStats, setGrammarStats] = useState(() => loadStats(GRAMMAR_STATS_KEY));
-  const [vocabStats, setVocabStats] = useState(() => loadStats(VOCAB_STATS_KEY));
+  const [allStats, setAllStats] = useState(() => ({
+    grammar: loadStats(GRAMMAR_STATS_KEY), vocab: loadStats(VOCAB_STATS_KEY), kana: loadStats(KANA_STATS_KEY),
+  }));
 
   const [selectedOpt, setSelectedOpt] = useState(null);
   const [textInput, setTextInput] = useState("");
@@ -839,20 +1068,22 @@ function App() {
   const [verdict, setVerdict] = useState(null);
 
   const isGrammar = mode === "grammar";
-  const chapterTitles = isGrammar ? CHAPTER_TITLES : VOCAB_CHAPTER_TITLES;
-  const stats = isGrammar ? grammarStats : vocabStats;
+  const isKana = mode === "kana";
+  const chapterTitles = isGrammar ? CHAPTER_TITLES : isKana ? KANA_CHAPTER_TITLES : VOCAB_CHAPTER_TITLES;
+  const itemsSource = isGrammar ? GRAMMAR_ITEMS : isKana ? KANA_ITEMS : VOCAB_ITEMS;
+  const statsKey = isGrammar ? GRAMMAR_STATS_KEY : isKana ? KANA_STATS_KEY : VOCAB_STATS_KEY;
+  const stats = allStats[mode];
 
   const rawPool = useMemo(
-    () => (isGrammar ? GRAMMAR_ITEMS : VOCAB_ITEMS).filter((it) => selectedChapters.has(it.chapter)),
-    [isGrammar, selectedChapters]
+    () => itemsSource.filter((it) => selectedChapters.has(it.chapter)),
+    [itemsSource, selectedChapters]
   );
   const pool = isGrammar ? rawPool.filter((it) => selectedTypes.has(it.type)) : rawPool;
 
   const chapterAccuracy = useMemo(() => {
     const acc = {};
-    const source = isGrammar ? GRAMMAR_ITEMS : VOCAB_ITEMS;
     for (const n of Object.keys(chapterTitles).map(Number)) {
-      const items = source.filter((it) => it.chapter === n);
+      const items = itemsSource.filter((it) => it.chapter === n);
       let correct = 0, total = 0;
       for (const it of items) {
         const s = stats[it.id];
@@ -861,7 +1092,7 @@ function App() {
       acc[n] = total ? Math.round((correct / total) * 100) : null;
     }
     return acc;
-  }, [isGrammar, stats, chapterTitles]);
+  }, [itemsSource, stats, chapterTitles]);
 
   const switchMode = (m) => { setMode(m); setScreen("setup"); };
 
@@ -871,9 +1102,10 @@ function App() {
       const picked = weightedTake(pool, (it) => priorityWeight(it.id, stats), n).map(prepGrammarItem);
       setQueue(picked);
     } else {
-      const words = weightedTake(rawPool, (w) => priorityWeight(w.id, stats), n);
+      const items = weightedTake(rawPool, (w) => priorityWeight(w.id, stats), n);
       const typesArr = Array.from(selectedTypes);
-      const picked = words.map((w) => buildVocabQuizItem(w, typesArr[Math.floor(Math.random() * typesArr.length)], rawPool));
+      const builder = isKana ? buildKanaQuizItem : buildVocabQuizItem;
+      const picked = items.map((it) => builder(it, typesArr[Math.floor(Math.random() * typesArr.length)], rawPool));
       setQueue(picked);
     }
     setIdx(0);
@@ -887,14 +1119,12 @@ function App() {
   const current = queue[idx];
 
   const recordResult = (itemId, correct) => {
-    const setter = isGrammar ? setGrammarStats : setVocabStats;
-    const key = isGrammar ? GRAMMAR_STATS_KEY : VOCAB_STATS_KEY;
-    const base = isGrammar ? grammarStats : vocabStats;
+    const base = allStats[mode];
     const next = { ...base };
     const s = next[itemId] || { correct: 0, total: 0 };
     next[itemId] = { correct: s.correct + (correct ? 1 : 0), total: s.total + 1, lastResult: correct ? "correct" : "incorrect" };
-    setter(next);
-    saveStats(key, next);
+    setAllStats((prev) => ({ ...prev, [mode]: next }));
+    saveStats(statsKey, next);
     setScore((sc) => ({ correct: sc.correct + (correct ? 1 : 0), total: sc.total + 1 }));
   };
 
@@ -952,8 +1182,9 @@ function App() {
         </div>
         {screen === "setup" && (
           <div style={S.modeRow}>
-            <button style={{ ...S.modeBtn, ...(isGrammar ? S.modeBtnActive : {}) }} onClick={() => switchMode("grammar")}>文法 Grammar</button>
-            <button style={{ ...S.modeBtn, ...(!isGrammar ? S.modeBtnActive : {}) }} onClick={() => switchMode("vocab")}>単語 Vocabulary</button>
+            <button style={{ ...S.modeBtn, ...(mode === "grammar" ? S.modeBtnActive : {}) }} onClick={() => switchMode("grammar")}>文法 Grammar</button>
+            <button style={{ ...S.modeBtn, ...(mode === "vocab" ? S.modeBtnActive : {}) }} onClick={() => switchMode("vocab")}>単語 Vocabulary</button>
+            <button style={{ ...S.modeBtn, ...(mode === "kana" ? S.modeBtnActive : {}) }} onClick={() => switchMode("kana")}>かな Kana</button>
           </div>
         )}
       </header>
@@ -965,7 +1196,8 @@ function App() {
             selectedTypes={selectedTypes} toggleType={toggleType}
             sessionSize={sessionSize} setSessionSize={setSessionSize}
             pool={pool} startQuiz={startQuiz} chapterAccuracy={chapterAccuracy}
-            poolLabel={isGrammar ? "question" : "word"}
+            poolLabel={isGrammar ? "question" : isKana ? "character" : "word"}
+            upcoming={isKana ? [] : UPCOMING_CHAPTERS}
           />
         )}
         {screen === "quiz" && current && (
@@ -983,7 +1215,7 @@ function App() {
   );
 }
 
-function SetupScreen({ chapterTitles, selectedChapters, toggleChapter, selectedTypes, toggleType, sessionSize, setSessionSize, pool, startQuiz, chapterAccuracy, poolLabel }) {
+function SetupScreen({ chapterTitles, selectedChapters, toggleChapter, selectedTypes, toggleType, sessionSize, setSessionSize, pool, startQuiz, chapterAccuracy, poolLabel, upcoming }) {
   const chapters = Object.keys(chapterTitles).map(Number);
   return (
     <div style={S.setupWrap}>
@@ -1001,7 +1233,7 @@ function SetupScreen({ chapterTitles, selectedChapters, toggleChapter, selectedT
               </button>
             );
           })}
-          {UPCOMING_CHAPTERS.map((n) => (
+          {upcoming.map((n) => (
             <div key={n} style={S.chapterTileDisabled}>
               <div style={S.chapterNum}>{String(n).padStart(2, "0")}</div>
               <div style={S.chapterName}>coming soon</div>
