@@ -248,7 +248,7 @@ const GRAMMAR_ITEMS = [
   { id: "c4-3b", chapter: 4, point: "Past tense of です", type: "fill",
     sentence: "Say 'Yesterday was not Sunday.' (past negative)",
     answer: "きのうはにちようびじゃありませんでした。", altAnswers: ["きのうはにちようびじゃなかったです。"],
-    note: "です → じゃありませんでした for past negative。" },
+    note: "です → じゃありませんでした (or the more casual-sounding じゃなかったです) for past negative — both are correct polite past negatives, just slightly different in feel。" },
   { id: "c4-4", chapter: 4, point: "Past tense of verbs", type: "fill", template: true, slot: "godanVerb|ichidanVerb",
     build: (w) => ({
       sentence: `Conjugate ${conjugate.masu(w.jp, w.tags)} into the past tense.`,
@@ -297,8 +297,8 @@ const GRAMMAR_ITEMS = [
     build: (w) => ({ sentence: `Conjugate ${w.jp}です into the past tense.`, answer: `${iAdjPast(w.jp)}です`, note: "い-adj past: drop い, add かった。" }),
     fallback: () => ({ sentence: "Conjugate たかいです into the past tense.", answer: "たかかったです", note: "い-adj past: drop い, add かった。" }) },
   { id: "c5-2b", chapter: 5, point: "Adjectives (past tense)", type: "fill", template: true, slot: "iAdj",
-    build: (w) => ({ sentence: `Conjugate ${w.jp}です into the present negative.`, answer: `${iAdjNeg(w.jp)}です`, altAnswers: [`${w.jp.slice(0, -1)}くありません`], note: "い-adj negative: drop い, add くない。" }),
-    fallback: () => ({ sentence: "Conjugate たかいです into the present negative.", answer: "たかくないです", altAnswers: ["たかくありません"], note: "い-adj negative: drop い, add くない。" }) },
+    build: (w) => ({ sentence: `Conjugate ${w.jp}です into the present negative.`, answer: `${iAdjNeg(w.jp)}です`, altAnswers: [`${w.jp.slice(0, -1)}くありません`], note: "い-adj negative: drop い, add くない (くないです) — or the more formal くありません. Both are correct, くありません is just more polite/formal。" }),
+    fallback: () => ({ sentence: "Conjugate たかいです into the present negative.", answer: "たかくないです", altAnswers: ["たかくありません"], note: "い-adj negative: drop い, add くない (くないです) — or the more formal くありません. Both are correct, くありません is just more polite/formal。" }) },
   { id: "c5-3", chapter: 5, point: "Adjectives (noun modification)", type: "mc",
     sentence: "＿＿＿ ほんをかいました。(bought an expensive book)", answer: "たかい",
     options: ["たかい", "たかいの", "たかくて", "たかかった"],
@@ -932,6 +932,23 @@ const normalizeJP = (s) =>
   (s || "").replace(/[。、！？\s]/g, "")
     .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).trim().toLowerCase();
 
+// A user prepending an optional subject like わたしは／わたしの／ぼくは to an
+// otherwise-correct answer is still correct Japanese — just more explicit
+// than the model answer. Strip it before comparing if the exact match fails.
+const OPTIONAL_PREFIXES = ["わたしは", "わたしの", "わたくしは", "ぼくは"];
+const stripOptionalPrefix = (s) => {
+  for (const p of OPTIONAL_PREFIXES) {
+    if (s.startsWith(p)) return s.slice(p.length);
+  }
+  return s;
+};
+const matchesAnswer = (input, answer, altAnswers) => {
+  const candidates = [answer, ...(altAnswers || [])].map(normalizeJP);
+  const normInput = normalizeJP(input);
+  if (candidates.includes(normInput)) return true;
+  return candidates.includes(stripOptionalPrefix(normInput));
+};
+
 const shuffle = (arr) => {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -1137,8 +1154,7 @@ function App() {
   };
   const submitFill = () => {
     if (verdict) return;
-    const candidates = [current.answer, ...(current.altAnswers || [])].map(normalizeJP);
-    const correct = candidates.includes(normalizeJP(textInput));
+    const correct = matchesAnswer(textInput, current.answer, current.altAnswers);
     setVerdict(correct ? "correct" : "incorrect");
     recordResult(current.id, correct);
   };
@@ -1306,7 +1322,7 @@ function QuizScreen({ item, idx, total, score, selectedOpt, submitMC, textInput,
               if (verdict && isAnswer) style = { ...style, ...S.optionCorrect };
               else if (verdict && isChosen && !isAnswer) style = { ...style, ...S.optionWrong };
               else if (isChosen) style = { ...style, ...S.optionChosen };
-              return <button key={opt} style={style} onClick={() => submitMC(opt)} disabled={!!verdict}>{opt}</button>;
+              return <button key={`${item.id}-${opt}`} style={style} onClick={(e) => { submitMC(opt); e.currentTarget.blur(); }} disabled={!!verdict}>{opt}</button>;
             })}
           </div>
         )}
