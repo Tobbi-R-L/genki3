@@ -44,7 +44,7 @@ const { useState, useEffect, useMemo } = React;
 const GRAMMAR_ITEMS = [
   { id: "c1-1", chapter: 1, point: "Xは Yです", type: "fill",
     sentence: "Say 'I am a student.' (わたし＝I)",
-    answer: "わたしはがくせいです。", note: "Basic pattern: [topic]は [noun]です。" },
+    answer: "わたしはがくせいです。", altAnswers: ["がくせいです。", "ぼくはがくせいです。"], note: "Basic pattern: [topic]は [noun]です。" },
   { id: "c1-1b", chapter: 1, point: "Xは Yです", type: "fill",
     sentence: "Say 'My friend is a nurse.' (ともだち＝friend, かんごし＝nurse)",
     answer: "ともだちはかんごしです。", note: "Basic pattern: [topic]は [noun]です。" },
@@ -66,7 +66,7 @@ const GRAMMAR_ITEMS = [
     build: (w) => ({
       sentence: `＿＿＿おねえさんは${w.jp}です。(Yamada's older sister)`, answer: "やまださんの",
       options: ["やまださんの", "やまださんは", "やまださんを", "やまださんが"],
-      translation: `Mr./Ms. Yamada's older sister is a(n) ${w.en}.`, note: "Noun1の Noun2 = Noun1's Noun2。",
+      translation: `Mr./Ms. Yamada's older sister is ${withArticle(cleanGloss(w.en))}.`, note: "Noun1の Noun2 = Noun1's Noun2。",
     }),
     fallback: () => ({ sentence: "＿＿＿おねえさんはいしゃです。(Yamada's older sister)", answer: "やまださんの",
       options: ["やまださんの", "やまださんは", "やまださんを", "やまださんが"], translation: "Mr./Ms. Yamada's older sister is a doctor.", note: "Noun1の Noun2 = Noun1's Noun2。" }) },
@@ -76,7 +76,7 @@ const GRAMMAR_ITEMS = [
       translation: `わたしのせんこうは${w.jp}です。`,
       note: "わたしの here shows possession — 'my major'。",
     }),
-    fallback: () => ({ sentence: "My major is Asian studies.", translation: "わたしのせんこうはアジアけんきょうです。", note: "わたしの here shows possession — 'my major'。" }) },
+    fallback: () => ({ sentence: "My major is Asian studies.", translation: "わたしのせんこうはアジアけんきゅうです。", note: "わたしの here shows possession — 'my major'。" }) },
   { id: "c1-4b", chapter: 1, point: "Noun1のNoun2 (possession)", type: "translate", dir: "jp-en", template: true, slot: "major",
     build: (w) => ({
       sentence: `たなかさんのせんこうは${w.jp}です。`,
@@ -120,10 +120,10 @@ const GRAMMAR_ITEMS = [
       options: ["ここ", "そこ", "あそこ", "どこ"], translation: "The bank is there (near you).", note: "そこ pairs with それ／その — near the listener。" }) },
   { id: "c2-4", chapter: 2, point: "だれのNoun", type: "fill",
     sentence: "Ask 'Whose bag is this?'",
-    answer: "これはだれのかばんですか。", note: "だれの Noun = whose Noun。" },
+    answer: "これはだれのかばんですか。", altAnswers: ["だれのかばんですか。", "このかばんはだれのですか。", "これはだれのですか。"], note: "だれの Noun = whose Noun。" },
   { id: "c2-4b", chapter: 2, point: "だれのNoun", type: "fill",
     sentence: "Ask 'Whose umbrella is this?'",
-    answer: "これはだれのかさですか。", note: "だれの Noun = whose Noun。" },
+    answer: "これはだれのかさですか。", altAnswers: ["だれのかさですか。", "このかさはだれのですか。", "これはだれのですか。"], note: "だれの Noun = whose Noun。" },
   { id: "c2-5", chapter: 2, point: "Noun も", type: "translate", dir: "jp-en",
     sentence: "たなかさんもがくせいです。",
     translation: "Mr./Ms. Tanaka is also a student.", note: "も replaces は when adding 'also'。" },
@@ -132,11 +132,11 @@ const GRAMMAR_ITEMS = [
     translation: "このかばんもたかいです。", note: "も replaces は when adding 'also'。" },
   { id: "c2-6", chapter: 2, point: "Noun じゃないです", type: "fill",
     sentence: "Negate this: これはとけいです。",
-    answer: "これはとけいじゃないです。", altAnswers: ["これはとけいじゃありません。"],
+    answer: "これはとけいじゃないです。", altAnswers: ["これはとけいじゃありません。", "これはとけいではありません。", "とけいじゃないです。", "とけいじゃありません。"],
     translation: "This is not a watch.", note: "です → じゃないです or じゃありません。" },
   { id: "c2-6b", chapter: 2, point: "Noun じゃないです", type: "fill",
     sentence: "Negate this: これはさいふです。",
-    answer: "これはさいふじゃないです。", altAnswers: ["これはさいふじゃありません。"],
+    answer: "これはさいふじゃないです。", altAnswers: ["これはさいふじゃありません。", "これはさいふではありません。", "さいふじゃないです。", "さいふじゃありません。"],
     translation: "This is not a wallet.", note: "です → じゃないです or じゃありません。" },
   { id: "c2-7", chapter: 2, point: "～ね／～よ", type: "mc",
     sentence: "このとんかつはおいしいです＿。(seeking agreement, 'isn't it?')", answer: "ね",
@@ -149,31 +149,28 @@ const GRAMMAR_ITEMS = [
 
   { id: "c3-1", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill", template: true, slot: "godanVerb",
     build: (w) => ({
-      sentence: `Conjugate ${w.jp} (${w.en}) into the ます-form.`,
+      sentence: `Conjugate ${w.jp} (${cleanGloss(w.en)}) into the ます-form.`,
       answer: conjugate.masu(w.jp, []), note: "u-verb: change final -u to -i, add ます。",
     }),
     fallback: () => ({ sentence: "Conjugate のむ (to drink) into the ます-form.", answer: "のみます", note: "u-verb: change final -u to -i, add ます。" }) },
-  { id: "c3-1b", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill", template: true, slot: "godanVerb",
-    build: (w) => ({
-      sentence: `Conjugate ${w.jp} (${w.en}) into the ます-form.`,
-      answer: conjugate.masu(w.jp, []), note: "u-verb: change final -u to -i, add ます。",
-    }),
-    fallback: () => ({ sentence: "Conjugate よむ (to read) into the ます-form.", answer: "よみます", note: "u-verb: change final -u to -i, add ます。" }) },
+  { id: "c3-1b", chapter: 3, point: "Verb conjugation (dictionary→ます)", type: "fill", template: true, slot: "ichidanVerb",
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${cleanGloss(w.en)}) into the ます-form.`, answer: conjugate.masu(w.jp, w.tags), note: "る-verb: drop る, add ます。" }),
+    fallback: () => ({ sentence: "Conjugate たべる (to eat) into the ます-form.", answer: "たべます", note: "る-verb: drop る, add ます。" }) },
   { id: "c3-2", chapter: 3, point: "Verb types", type: "mc",
     sentence: "Which of these is a る-verb (ichidan)?", answer: "たべる",
     options: ["たべる", "のむ", "きく", "はなす"],
-    note: "る-verbs drop る and add ます／て／た directly to the stem。" },
+    note: "る-verbs drop る and add ます directly (たべる → たべます); う-verbs change the final -u to -i first (のむ → のみます)。" },
   { id: "c3-2b", chapter: 3, point: "Verb types", type: "mc",
     sentence: "Which of these is an irregular verb?", answer: "する",
     options: ["する", "たべる", "のむ", "きく"],
     note: "する and くる are the only two irregular verbs in Japanese。" },
   { id: "c3-3", chapter: 3, point: "Particles を", type: "mc",
     sentence: "コーヒー＿のみます。", answer: "を",
-    options: ["を", "が", "で", "に"],
+    options: ["を", "が", "に", "へ"],
     translation: "I drink coffee.", note: "を marks the direct object of a verb。" },
   { id: "c3-3b", chapter: 3, point: "Particles を", type: "mc",
     sentence: "テレビ＿みます。", answer: "を",
-    options: ["を", "が", "で", "に"],
+    options: ["を", "が", "に", "へ"],
     translation: "I watch TV.", note: "を marks the direct object of a verb。" },
   { id: "c3-4", chapter: 3, point: "Particles に (time)", type: "mc",
     sentence: "いちじ＿おきます。(gets up AT 1:00)", answer: "に",
@@ -183,12 +180,15 @@ const GRAMMAR_ITEMS = [
     sentence: "にじはん＿ねます。(goes to bed AT 2:30)", answer: "に",
     options: ["に", "で", "を", "は"],
     translation: "I go to bed at 2:30.", note: "に attaches to a specific clock time。" },
-  { id: "c3-5", chapter: 3, point: "Time references (から～まで)", type: "fill",
-    sentence: "Say 'School is from 9:00 to 3:00.' (くじ＝9:00, さんじ＝3:00)",
-    answer: "がっこうはくじからさんじまでです。", note: "から = from, まで = until。" },
-  { id: "c3-5b", chapter: 3, point: "Time references (から～まで)", type: "fill",
-    sentence: "Say 'The library is open from 10:00 to 6:00.' (じゅうじ＝10:00, ろくじ＝6:00)",
-    answer: "としょかんはじゅうじからろくじまでです。", note: "から = from, まで = until。" },
+  { id: "c3-9", chapter: 3, point: "Time references (に or no particle)", type: "mc",
+    sentence: "あした＿＿＿えいがをみます。(I will watch a movie tomorrow)", answer: "(no particle)",
+    options: ["(no particle)", "に", "を", "で"],
+    translation: "I will watch a movie tomorrow.",
+    note: "Time words defined relative to now — あした, きょう, こんばん, まいにち, まいばん, いつ — take no particle. に is for clock times and days of the week (いちじに, にちようびに)。" },
+  { id: "c3-9b", chapter: 3, point: "Time references (に or no particle)", type: "fill",
+    sentence: "Say 'I will go to school on Sunday.'",
+    answer: "にちようびにがっこうにいきます。", altAnswers: ["にちようびにがっこうへいきます。", "がっこうににちようびにいきます。", "がっこうへにちようびにいきます。"],
+    note: "Days of the week and clock times take に (にちようびに, いちじに). Words like あした／きょう／まいにち take no particle, and に is optional after しゅうまつ。" },
   { id: "c3-6", chapter: 3, point: "～ませんか (invitation)", type: "translate", dir: "en-jp",
     sentence: "Won't you eat breakfast?",
     translation: "あさごはんをたべませんか。",
@@ -204,15 +204,48 @@ const GRAMMAR_ITEMS = [
   { id: "c3-7b", chapter: 3, point: "Frequency adverbs", type: "mc",
     sentence: "わたしは＿＿＿ にほんごをべんきょうします。(often)", answer: "よく",
     options: ["よく", "ぜんぜん", "あまり", "ときどき"],
-    translation: "I often study Japanese.", note: "Frequency adverbs sit right before the verb。" },
-  { id: "c3-8", chapter: 3, point: "Topic particle は (contrastive)", type: "translate", dir: "jp-en",
-    sentence: "あさごはんはたべますが、ばんごはんはたべません。",
-    translation: "I eat breakfast, but I don't eat dinner.",
-    note: "は marks contrast between two topics; が here means 'but'。" },
-  { id: "c3-8b", chapter: 3, point: "Topic particle は (contrastive)", type: "translate", dir: "jp-en",
-    sentence: "にほんごはべんきょうしますが、えいごはべんきょうしません。",
-    translation: "I study Japanese, but I don't study English.",
-    note: "は marks contrast between two topics; が here means 'but'。" },
+    translation: "I often study Japanese.", note: "Frequency adverbs come before the verb — usually early in the sentence, right after the topic, as here。" },
+  { id: "c3-8", chapter: 3, point: "Topic particle は (non-subject topics)", type: "translate", dir: "jp-en",
+    variants: [
+      { sentence: "しゅうまつは たいてい なにを しますか。", translation: "What do you usually do on weekends?" },
+      { sentence: "きょうは がっこうに いきません。", translation: "Today, I am not going to school." },
+      { sentence: "ばんごはんは うちで たべます。", translation: "Dinner, I eat at home." },
+    ].map((v) => ({ ...v, note: "は can turn a phrase that is not the subject — a time word, or even the object — into the topic: 'as for weekends／today／dinner, …'. The particle it would otherwise have (を, or none) is dropped。" })) },
+  { id: "c3-8b", chapter: 3, point: "Topic particle は (non-subject topics)", type: "mc",
+    variants: [
+      { sentence: "きょう＿＿＿ がっこうに いきません。(as for today, …)", translation: "Today, I am not going to school." },
+      { sentence: "しゅうまつ＿＿＿ なにを しますか。(as for the weekend, …)", translation: "What will you do on the weekend?" },
+      { sentence: "こんばん＿＿＿ えいがを みます。(as for tonight, …)", translation: "Tonight, I will watch a movie." },
+    ].map((v) => ({ ...v, answer: "は", options: ["は", "を", "が", "で"], note: "A time word can be made the topic with は ('as for today…'). It is still not the subject — the person doing the action is。" })) },
+  { id: "c3-8c", chapter: 3, point: "Topic particle は (non-subject topics)", type: "fill",
+    sentence: "Make あした the topic and say: 'Tomorrow, I will go to the library.'",
+    answer: "あしたはとしょかんにいきます。", altAnswers: ["あしたはとしょかんへいきます。", "あしたはわたしはとしょかんにいきます。"],
+    note: "あした normally takes no particle; adding は makes it the topic the sentence is about。" },
+  { id: "c3-11", chapter: 3, point: "Word order", type: "mc",
+    sentence: "Which sentence has natural word order?", answer: "わたしは きょう としょかんで にほんごを べんきょうします。",
+    options: ["わたしは きょう としょかんで にほんごを べんきょうします。", "わたしは べんきょうします きょう としょかんで にほんごを。", "にほんごを べんきょうします わたしは きょう としょかんで。", "わたしは きょう べんきょうします にほんごを としょかんで。"],
+    translation: "I will study Japanese in the library today.",
+    note: "The verb always comes last. A typical order is: topic, time, place, object, verb — the middle parts can be rearranged, the verb cannot。" },
+  { id: "c3-11b", chapter: 3, point: "Word order", type: "fill",
+    sentence: "Put these in a natural order:　たべます ／ うちで ／ わたしは ／ あさごはんを ／ まいにち",
+    answer: "わたしはまいにちうちであさごはんをたべます。", altAnswers: ["まいにちわたしはうちであさごはんをたべます。", "わたしはうちでまいにちあさごはんをたべます。", "わたしはまいにちあさごはんをうちでたべます。"],
+    translation: "I eat breakfast at home every day.",
+    note: "Topic first, verb last; time usually comes before place, and place before the object。" },
+  { id: "c3-12", chapter: 3, point: "Particles で (place of action)", type: "mc",
+    variants: [
+      { sentence: "としょかん＿＿＿ ほんを よみます。(read AT the library)", translation: "I read books at the library." },
+      { sentence: "うち＿＿＿ テレビを みます。(watch AT home)", translation: "I watch TV at home." },
+      { sentence: "カフェ＿＿＿ コーヒーを のみます。(drink AT a cafe)", translation: "I drink coffee at a cafe." },
+    ].map((v) => ({ ...v, answer: "で", options: ["で", "に", "を", "が"], note: "で marks the place where an action happens. に is for the destination of movement (いきます／きます／かえります), not for where you do something。" })) },
+  { id: "c3-12b", chapter: 3, point: "Particles に／へ (destination)", type: "mc",
+    variants: [
+      { sentence: "あした がっこう＿＿＿ いきます。", translation: "I will go to school tomorrow." },
+      { sentence: "きょう うち＿＿＿ かえります。", translation: "I will go back home today." },
+    ].map((v) => ({ ...v, answer: "に", options: ["に", "で", "を", "が"], note: "に marks the goal of movement with いく／くる／かえる. へ (pronounced 'e') can be used instead of に for a destination。" })) },
+  { id: "c3-12c", chapter: 3, point: "Particles に／へ (destination)", type: "fill",
+    sentence: "Say 'I will go to a cafe today.'",
+    answer: "きょうカフェにいきます。", altAnswers: ["きょうカフェへいきます。", "きょうはカフェにいきます。", "きょうはカフェへいきます。", "カフェにいきます。", "カフェへいきます。"],
+    note: "Destination + に or へ, then いきます. きょう takes no particle。" },
 
   { id: "c4-1", chapter: 4, point: "Xが あります／います", type: "mc", template: true, slot: "living",
     build: (w) => ({
@@ -224,30 +257,30 @@ const GRAMMAR_ITEMS = [
       options: ["います", "あります", "です", "いました"], translation: "There is a cat in the park.", note: "います = animate, あります = inanimate。" }) },
   { id: "c4-1b", chapter: 4, point: "Xが あります／います", type: "mc", template: true, slot: "object",
     build: (w) => ({
-      sentence: `つくえのうえに ${w.jp}が＿＿＿。(there is a ${w.en} on the desk)`, answer: "あります",
+      sentence: `つくえのうえに ${w.jp}が＿＿＿。(there is ${withArticle(cleanGloss(w.en))} on the desk)`, answer: "あります",
       options: ["あります", "います", "です", "ありました"],
-      translation: `There is a ${w.en} on the desk.`, note: "あります = inanimate things。",
+      translation: `There is ${withArticle(cleanGloss(w.en))} on the desk.`, note: "あります = inanimate things。",
     }),
     fallback: () => ({ sentence: "つくえのうえに ほんが＿＿＿。(there is a book on the desk)", answer: "あります",
       options: ["あります", "います", "です", "ありました"], translation: "There is a book on the desk.", note: "あります = inanimate things。" }) },
-  { id: "c4-2", chapter: 4, point: "Describing where things are", type: "fill", template: true, slot: "object",
+  { id: "c4-2", chapter: 4, point: "Xが あります／います", type: "fill", template: true, slot: "object",
     build: (w) => ({
-      sentence: `Say 'There is no ${w.en} on the desk.'`,
-      answer: `つくえのうえに${w.jp}がありません。`, note: "[place]に [thing]が あります／います describes location。",
+      sentence: `Say 'There is no ${cleanGloss(w.en)} on the desk.'`,
+      answer: `つくえのうえに${w.jp}がありません。`, altAnswers: [`つくえのうえに${w.jp}はありません。`, `つくえのうえには${w.jp}がありません。`, `つくえのうえには${w.jp}はありません。`, `${w.jp}はつくえのうえにありません。`], note: "[place]に [thing]が あります／います describes location。",
     }),
     fallback: () => ({ sentence: "Say 'There is no book on the desk.'", answer: "つくえのうえにほんがありません。", note: "[place]に [thing]が あります／います describes location。" }) },
-  { id: "c4-2b", chapter: 4, point: "Describing where things are", type: "fill", template: true, slot: "living",
+  { id: "c4-2b", chapter: 4, point: "Xが あります／います", type: "fill", template: true, words: ["いぬ", "ねこ"],
     build: (w) => ({
       sentence: `Say 'There is a ${w.en} under the chair.'`,
-      answer: `いすのしたに${w.jp}がいます。`, note: "[place]に [thing]が あります／います describes location。",
+      answer: `いすのしたに${w.jp}がいます。`, altAnswers: [`いすのしたには${w.jp}がいます。`, `${w.jp}がいすのしたにいます。`, `${w.jp}はいすのしたにいます。`], note: "[place]に [thing]が あります／います describes location。",
     }),
     fallback: () => ({ sentence: "Say 'There is a cat under the chair.'", answer: "いすのしたにねこがいます。", note: "[place]に [thing]が あります／います describes location。" }) },
   { id: "c4-3", chapter: 4, point: "Past tense of です", type: "fill",
     sentence: "Say 'Yesterday was Monday.'",
-    answer: "きのうはげつようびでした。", note: "です → でした for past tense。" },
+    answer: "きのうはげつようびでした。", altAnswers: ["きのうげつようびでした。"], note: "です → でした for past tense。" },
   { id: "c4-3b", chapter: 4, point: "Past tense of です", type: "fill",
     sentence: "Say 'Yesterday was not Sunday.' (past negative)",
-    answer: "きのうはにちようびじゃありませんでした。", altAnswers: ["きのうはにちようびじゃなかったです。"],
+    answer: "きのうはにちようびじゃありませんでした。", altAnswers: ["きのうはにちようびじゃなかったです。", "きのうはにちようびではありませんでした。", "きのうにちようびじゃありませんでした。", "きのうにちようびじゃなかったです。"],
     note: "です → じゃありませんでした (or the more casual-sounding じゃなかったです) for past negative — both are correct polite past negatives, just slightly different in feel。" },
   { id: "c4-4", chapter: 4, point: "Past tense of verbs", type: "fill", template: true, slot: "godanVerb|ichidanVerb",
     build: (w) => ({
@@ -280,25 +313,95 @@ const GRAMMAR_ITEMS = [
   { id: "c4-7b", chapter: 4, point: "たくさん", type: "translate", dir: "jp-en",
     sentence: "ともだちがたくさんいます。",
     translation: "I have a lot of friends.", note: "たくさん (a lot) usually sits right before the verb。" },
-  { id: "c4-8", chapter: 4, point: "も (emphatic quantity)", type: "fill",
-    sentence: "Say 'I waited for as long as two hours.' (emphasizing it was a lot)",
-    answer: "にじかんもまちました。", note: "[quantity／duration]＋も can emphasize 'as much／long as'。" },
-  { id: "c4-8b", chapter: 4, point: "も (emphatic quantity)", type: "fill",
-    sentence: "Say 'I studied for as long as three hours.'",
-    answer: "さんじかんもべんきょうしました。", note: "[quantity／duration]＋も can emphasize 'as much／long as'。" },
+  { id: "c4-9", chapter: 4, point: "も (too／also)", type: "fill",
+    sentence: "たなかさんは きのう えいがを みました。 Now say 'I also watched a movie yesterday.'",
+    answer: "わたしもきのうえいがをみました。", altAnswers: ["きのうわたしもえいがをみました。", "ぼくもきのうえいがをみました。", "わたしもえいがをみました。"],
+    note: "When someone else does the same thing, も takes the place of は／が／を on the word that is 'also' — わたしは becomes わたしも, never わたしはも。" },
+  { id: "c4-9b", chapter: 4, point: "も (too／also)", type: "mc",
+    sentence: "たなかさんは こうえんに いきました。やまださん＿＿＿ こうえんに いきました。(Yamada went too)", answer: "も",
+    options: ["も", "を", "に", "で"],
+    translation: "Mr./Ms. Tanaka went to the park. Mr./Ms. Yamada went to the park too.",
+    note: "も replaces は／が／を to mean 'too'. After に or で it is added on instead of replacing them: こうえんにも いきました = 'I went to the park too (as well as somewhere else)'。" },
+  { id: "c4-10", chapter: 4, point: "と (and／with)", type: "translate", dir: "jp-en",
+    variants: [
+      { sentence: "パンと コーヒーを かいました。", translation: "I bought bread and coffee." },
+      { sentence: "さかなと やさいを たべました。", translation: "I ate fish and vegetables." },
+      { sentence: "つくえの うえに ほんと ノートが あります。", translation: "There are a book and a notebook on the desk." },
+    ].map((v) => ({ ...v, note: "と joins two nouns: 'A and B'. It only connects nouns — it cannot join two verbs or two sentences。" })) },
+  { id: "c4-11", chapter: 4, point: "Describing where things are", type: "fill",
+    variants: [
+      { sentence: "Say 'The bank is next to the library.'", answer: "ぎんこうはとしょかんのとなりです。" },
+      { sentence: "Say 'The supermarket is in front of the hotel.'", answer: "スーパーはホテルのまえです。" },
+      { sentence: "Say 'The post office is behind the bank.'", answer: "ゆうびんきょくはぎんこうのうしろです。" },
+      { sentence: "Say 'The park is near the university.'", answer: "こうえんはだいがくのちかくです。" },
+      { sentence: "Say 'The restaurant is inside the hotel.'", answer: "レストランはホテルのなかです。" },
+      { sentence: "Say 'The bus stop is in front of the hospital.'", answer: "バスていはびょういんのまえです。" },
+    ].map((v) => ({ ...v, altAnswers: [v.answer.replace("です。", "にあります。")], note: "[thing]は [reference point]の [position word]です。 The position word (となり, まえ, うしろ, なか, うえ, した, ちかく) comes after the reference point, joined by の。" })) },
+  { id: "c4-11b", chapter: 4, point: "Describing where things are", type: "mc",
+    variants: [
+      { sentence: "ねこは いすの＿＿＿です。(the cat is under the chair)", answer: "した", translation: "The cat is under the chair." },
+      { sentence: "ほんは つくえの＿＿＿です。(the book is on the desk)", answer: "うえ", translation: "The book is on the desk." },
+      { sentence: "さいふは かばんの＿＿＿です。(the wallet is inside the bag)", answer: "なか", translation: "The wallet is inside the bag." },
+      { sentence: "びょういんは ホテルの＿＿＿です。(the hospital is next to the hotel)", answer: "となり", translation: "The hospital is next to the hotel." },
+    ].map((v) => ({ ...v, options: ["した", "うえ", "なか", "となり"], note: "うえ = on／above, した = under, なか = inside, となり = next to, まえ = in front, うしろ = behind, ちかく = near。" })) },
+  { id: "c4-11c", chapter: 4, point: "Describing where things are", type: "translate", dir: "jp-en",
+    sentence: "ホテルは びょういんと ぎんこうの あいだです。",
+    translation: "The hotel is between the hospital and the bank.",
+    note: "A と B の あいだ = between A and B。" },
 
-  { id: "c5-1", chapter: 5, point: "Adjectives (present tense)", type: "fill", template: true, slot: "iAdj",
-    build: (w) => ({ sentence: `Say 'This is ${w.en}.'`, answer: `これは${w.jp}です。`, note: "い-adjectives attach directly to です。" }),
-    fallback: () => ({ sentence: "Say 'This book is expensive.'", answer: "このほんはたかいです。", note: "い-adjectives attach directly to です。" }) },
-  { id: "c5-1b", chapter: 5, point: "Adjectives (present tense)", type: "fill", template: true, slot: "iAdj",
-    build: (w) => ({ sentence: `Say 'This is ${w.en}.'`, answer: `これは${w.jp}です。`, note: "い-adjectives attach directly to です。" }),
-    fallback: () => ({ sentence: "Say 'This coffee is hot.'", answer: "このコーヒーはあついです。", note: "い-adjectives attach directly to です。" }) },
+  { id: "c5-1", chapter: 5, point: "Adjectives (present tense)", type: "fill",
+    variants: [
+      ["This book is expensive.", "このほんはたかいです。"], ["This coffee is hot.", "このコーヒーはあついです。"],
+      ["This movie is interesting.", "このえいがはおもしろいです。"], ["This test is difficult.", "このテストはむずかしいです。"],
+      ["This room is large.", "このへやはおおきいです。"], ["This watch is old.", "このとけいはふるいです。"],
+      ["This bag is cheap.", "このかばんはやすいです。"], ["This fish is delicious.", "このさかなはおいしいです。"],
+    ].map(([en, jp]) => ({ sentence: `Say '${en}'`, answer: jp, note: "い-adjectives go straight before です — no extra particle or な。" })) },
+  { id: "c5-1b", chapter: 5, point: "Adjectives (present tense)", type: "translate", dir: "jp-en",
+    variants: [
+      ["きょうは さむいです。", "It is cold today."], ["この しゅくだいは やさしいです。", "This homework is easy."],
+      ["わたしの へやは ちいさいです。", "My room is small."], ["にほんごの クラスは たのしいです。", "The Japanese class is fun."],
+      ["せんせいは いそがしいです。", "The teacher is busy."], ["その えいがは こわいです。", "That movie is scary."],
+    ].map(([jp, en]) => ({ sentence: jp, translation: en, note: "い-adjective + です. さむい／あつい describe the weather or how a place feels; いそがしい describes people。" })) },
   { id: "c5-2", chapter: 5, point: "Adjectives (past tense)", type: "fill", template: true, slot: "iAdj",
     build: (w) => ({ sentence: `Conjugate ${w.jp}です into the past tense.`, answer: `${iAdjPast(w.jp)}です`, note: "い-adj past: drop い, add かった。" }),
     fallback: () => ({ sentence: "Conjugate たかいです into the past tense.", answer: "たかかったです", note: "い-adj past: drop い, add かった。" }) },
-  { id: "c5-2b", chapter: 5, point: "Adjectives (past tense)", type: "fill", template: true, slot: "iAdj",
+  { id: "c5-2b", chapter: 5, point: "Adjectives (present tense)", type: "fill", template: true, slot: "iAdj",
     build: (w) => ({ sentence: `Conjugate ${w.jp}です into the present negative.`, answer: `${iAdjNeg(w.jp)}です`, altAnswers: [`${w.jp.slice(0, -1)}くありません`], note: "い-adj negative: drop い, add くない (くないです) — or the more formal くありません. Both are correct, くありません is just more polite/formal。" }),
     fallback: () => ({ sentence: "Conjugate たかいです into the present negative.", answer: "たかくないです", altAnswers: ["たかくありません"], note: "い-adj negative: drop い, add くない (くないです) — or the more formal くありません. Both are correct, くありません is just more polite/formal。" }) },
+  { id: "c5-2c", chapter: 5, point: "Adjectives (past tense)", type: "fill", template: true, slot: "iAdj",
+    build: (w) => ({ sentence: `Conjugate ${w.jp}です into the past negative.`, answer: `${w.jp.slice(0, -1)}くなかったです`, altAnswers: [`${w.jp.slice(0, -1)}くありませんでした`], note: "い-adj past negative: drop い, add くなかった (くなかったです) — or the more formal くありませんでした。" }),
+    fallback: () => ({ sentence: "Conjugate たかいです into the past negative.", answer: "たかくなかったです", altAnswers: ["たかくありませんでした"], note: "い-adj past negative: drop い, add くなかった (くなかったです) — or the more formal くありませんでした。" }) },
+  { id: "c5-9", chapter: 5, point: "Adjectives (irregular いい)", type: "fill",
+    variants: [
+      { sentence: "Conjugate いいです into the past tense.", answer: "よかったです" },
+      { sentence: "Conjugate いいです into the present negative.", answer: "よくないです", altAnswers: ["よくありません"] },
+      { sentence: "Conjugate いいです into the past negative.", answer: "よくなかったです", altAnswers: ["よくありませんでした"] },
+      { sentence: "Conjugate かっこいいです into the past tense.", answer: "かっこよかったです" },
+    ].map((v) => ({ ...v, note: "いい is irregular: everything except the plain present is built on よ — よかった, よくない, よくなかった. かっこいい follows the same pattern (かっこよかった)。" })) },
+  { id: "c5-7", chapter: 5, point: "な-adjectives (present tense)", type: "fill",
+    variants: [
+      ["This room is quiet.", "このへやはしずかです。"], ["This town is lively.", "このまちはにぎやかです。"],
+      ["This room is clean.", "このへやはきれいです。"], ["This flower is beautiful.", "このはなはきれいです。"],
+    ].map(([en, jp]) => ({ sentence: `Say '${en}'`, answer: jp, note: "な-adjectives go straight before です, like nouns — the な only appears when the adjective comes directly before a noun。" })) },
+  { id: "c5-7b", chapter: 5, point: "な-adjectives (past tense)", type: "fill", template: true, words: ["しずか", "きれい", "げんき", "にぎやか", "ひま"],
+    build: (w) => ({ sentence: `Conjugate ${w.jp}です into the past tense.`, answer: `${w.jp}でした`, note: "な-adjectives conjugate like nouns: です → でした。" }),
+    fallback: () => ({ sentence: "Conjugate しずかです into the past tense.", answer: "しずかでした", note: "な-adjectives conjugate like nouns: です → でした。" }) },
+  { id: "c5-7c", chapter: 5, point: "な-adjectives (present tense)", type: "fill", template: true, words: ["しずか", "きれい", "げんき", "にぎやか", "ひま"],
+    build: (w) => ({ sentence: `Conjugate ${w.jp}です into the present negative.`, answer: `${w.jp}じゃないです`, altAnswers: [`${w.jp}じゃありません`, `${w.jp}ではありません`, `${w.jp}ではないです`], note: "な-adjectives conjugate like nouns: です → じゃないです (or the more formal じゃありません). Careful with きれい: it ends in い but is a な-adjective, so きれいじゃないです, never きれくないです。" }),
+    fallback: () => ({ sentence: "Conjugate しずかです into the present negative.", answer: "しずかじゃないです", altAnswers: ["しずかじゃありません"], note: "な-adjectives conjugate like nouns: です → じゃないです (or じゃありません)。" }) },
+  { id: "c5-7d", chapter: 5, point: "な-adjectives (past tense)", type: "fill", template: true, words: ["しずか", "きれい", "げんき", "にぎやか", "ひま"],
+    build: (w) => ({ sentence: `Conjugate ${w.jp}です into the past negative.`, answer: `${w.jp}じゃなかったです`, altAnswers: [`${w.jp}じゃありませんでした`, `${w.jp}ではありませんでした`, `${w.jp}ではなかったです`], note: "な-adjective past negative: じゃなかったです (or the more formal じゃありませんでした)。" }),
+    fallback: () => ({ sentence: "Conjugate しずかです into the past negative.", answer: "しずかじゃなかったです", altAnswers: ["しずかじゃありませんでした"], note: "な-adjective past negative: じゃなかったです (or じゃありませんでした)。" }) },
+  { id: "c5-8", chapter: 5, point: "Adjectives (noun modification)", type: "mc",
+    variants: [
+      { sentence: "＿＿＿ へやですね。(a quiet room)", answer: "しずかな", options: ["しずかな", "しずか", "しずかの", "しずかい"], translation: "It's a quiet room, isn't it?" },
+      { sentence: "＿＿＿ まちですね。(a lively town)", answer: "にぎやかな", options: ["にぎやかな", "にぎやか", "にぎやかの", "にぎやかい"], translation: "It's a lively town, isn't it?" },
+      { sentence: "＿＿＿ はなですね。(a beautiful flower)", answer: "きれいな", options: ["きれいな", "きれい", "きれいの", "きれ"], translation: "It's a beautiful flower, isn't it?" },
+    ].map((v) => ({ ...v, note: "Before a noun, a な-adjective needs な: しずかな へや. い-adjectives need nothing: おおきい へや。" })) },
+  { id: "c5-8b", chapter: 5, point: "な-adjectives (present tense)", type: "mc",
+    sentence: "Which is the correct negative of きれいです?", answer: "きれいじゃないです",
+    options: ["きれいじゃないです", "きれくないです", "きれいくないです", "きれじゃないです"],
+    note: "きれい (and きらい) end in い but are な-adjectives, so they take じゃないです like nouns。" },
   { id: "c5-3", chapter: 5, point: "Adjectives (noun modification)", type: "mc",
     sentence: "＿＿＿ ほんをかいました。(bought an expensive book)", answer: "たかい",
     options: ["たかい", "たかいの", "たかくて", "たかかった"],
@@ -309,7 +412,7 @@ const GRAMMAR_ITEMS = [
     translation: "I ate delicious food.", note: "い-adjectives modify nouns directly, in their plain form。" },
   { id: "c5-4", chapter: 5, point: "好き（な）／きらい（な）", type: "mc",
     sentence: "わたしは おんがく＿すきです。", answer: "が",
-    options: ["が", "を", "は", "に"],
+    options: ["が", "を", "に", "で"],
     translation: "I like music.", note: "すき・きらい take が for the thing liked／disliked。" },
   { id: "c5-4b", chapter: 5, point: "好き（な）／きらい（な）", type: "translate", dir: "en-jp",
     sentence: "I dislike tests.",
@@ -319,32 +422,34 @@ const GRAMMAR_ITEMS = [
     answer: "いっしょにいきましょう。", note: "ましょう proposes an action together。" },
   { id: "c5-5b", chapter: 5, point: "～ましょう／～ましょうか", type: "fill",
     sentence: "Propose 'Shall we swim?'",
-    answer: "およぎましょうか。", note: "ましょうか softly proposes an action together。" },
+    answer: "およぎましょうか。", altAnswers: ["いっしょにおよぎましょうか。"], note: "ましょうか softly proposes an action together。" },
   { id: "c5-6", chapter: 5, point: "Counting", type: "fill",
     sentence: "Ask for two photos. (しゃしん＝photo, にまい＝2 flat objects)",
-    answer: "しゃしんをにまいください。", note: "枚 (まい) counts flat objects like photos or paper。" },
+    answer: "しゃしんをにまいください。", altAnswers: ["しゃしんをにまいおねがいします。", "にまいください。"], note: "枚 (まい) counts flat objects like photos or paper。" },
   { id: "c5-6b", chapter: 5, point: "Counting", type: "fill",
     sentence: "Ask for three photos. (さんまい＝3 flat objects)",
-    answer: "しゃしんをさんまいください。", note: "枚 (まい) counts flat objects like photos or paper。" },
+    answer: "しゃしんをさんまいください。", altAnswers: ["しゃしんをさんまいおねがいします。", "さんまいください。"], note: "枚 (まい) counts flat objects like photos or paper。" },
 
   { id: "c6-1", chapter: 6, point: "Te-form (る-verb)", type: "fill", template: true, slot: "ichidanVerb",
-    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "る-verbs: drop る, add て。" }),
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${cleanGloss(w.en)}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "る-verbs: drop る, add て。" }),
     fallback: () => ({ sentence: "Conjugate たべる (to eat) into the て-form.", answer: "たべて", note: "る-verbs: drop る, add て。" }) },
-  { id: "c6-1b", chapter: 6, point: "Te-form (る-verb)", type: "fill", template: true, slot: "ichidanVerb",
-    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "る-verbs: drop る, add て。" }),
-    fallback: () => ({ sentence: "Conjugate しめる (to close) into the て-form.", answer: "しめて", note: "る-verbs: drop る, add て。" }) },
-  { id: "c6-2", chapter: 6, point: "Te-form (う-verb)", type: "fill", template: true, slot: "godanVerb",
-    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "The te-form ending depends on the verb's last kana (く→いて, む/ぬ/ぶ→んで, う/つ/る→って, す→して)。" }),
-    fallback: () => ({ sentence: "Conjugate かく (to write) into the て-form.", answer: "かいて", note: "く → いて。" }) },
-  { id: "c6-2b", chapter: 6, point: "Te-form (う-verb)", type: "fill", template: true, slot: "godanVerb",
-    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "The te-form ending depends on the verb's last kana (く→いて, む/ぬ/ぶ→んで, う/つ/る→って, す→して)。" }),
-    fallback: () => ({ sentence: "Conjugate きく (to listen) into the て-form.", answer: "きいて", note: "く → いて。" }) },
-  { id: "c6-3", chapter: 6, point: "Te-form (う-verb)", type: "fill", template: true, slot: "godanVerb",
-    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "The te-form ending depends on the verb's last kana (く→いて, む/ぬ/ぶ→んで, う/つ/る→って, す→して)。" }),
-    fallback: () => ({ sentence: "Conjugate まつ (to wait) into the て-form.", answer: "まって", note: "う／つ／る → って。" }) },
-  { id: "c6-3b", chapter: 6, point: "Te-form (う-verb)", type: "fill", template: true, slot: "godanVerb",
-    build: (w) => ({ sentence: `Conjugate ${w.jp} (${w.en}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "The te-form ending depends on the verb's last kana (く→いて, む/ぬ/ぶ→んで, う/つ/る→って, す→して)。" }),
-    fallback: () => ({ sentence: "Conjugate かう (to buy) into the て-form.", answer: "かって", note: "う／つ／る → って。" }) },
+  { id: "c6-1b", chapter: 6, point: "Te-form (irregular verbs)", type: "fill",
+    variants: [
+      ["する (to do)", "して"], ["くる (to come)", "きて"], ["いく (to go)", "いって"],
+      ["べんきょうする (to study)", "べんきょうして"], ["でんわする (to call)", "でんわして"], ["もってくる (to bring a thing)", "もってきて"],
+    ].map(([v, a]) => ({ sentence: `Conjugate ${v} into the て-form.`, answer: a, note: "Irregular te-forms: する → して, くる → きて, and いく → いって (not いいて, even though it ends in く)。" })) },
+  { id: "c6-2", chapter: 6, point: "Te-form (う-verb: く／ぐ)", type: "fill", template: true, slot: "godanVerb", filter: (w) => "くぐ".includes(w.jp.slice(-1)),
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${cleanGloss(w.en)}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "う-verbs ending in く → いて, in ぐ → いで. The one exception is いく → いって。" }),
+    fallback: () => ({ sentence: "Conjugate かく (to write) into the て-form.", answer: "かいて", note: "う-verbs ending in く → いて, in ぐ → いで. The one exception is いく → いって。" }) },
+  { id: "c6-2b", chapter: 6, point: "Te-form (う-verb: む／ぬ／ぶ)", type: "fill", template: true, slot: "godanVerb", filter: (w) => "むぬぶ".includes(w.jp.slice(-1)),
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${cleanGloss(w.en)}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "う-verbs ending in む, ぬ or ぶ → んで。" }),
+    fallback: () => ({ sentence: "Conjugate のむ (to drink) into the て-form.", answer: "のんで", note: "う-verbs ending in む, ぬ or ぶ → んで。" }) },
+  { id: "c6-3", chapter: 6, point: "Te-form (う-verb: う／つ／る)", type: "fill", template: true, slot: "godanVerb", filter: (w) => "うつる".includes(w.jp.slice(-1)),
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${cleanGloss(w.en)}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "う-verbs ending in う, つ or る → って. (る-verbs like たべる just drop る: たべて.)" }),
+    fallback: () => ({ sentence: "Conjugate まつ (to wait) into the て-form.", answer: "まって", note: "う-verbs ending in う, つ or る → って. (る-verbs like たべる just drop る: たべて.)" }) },
+  { id: "c6-3b", chapter: 6, point: "Te-form (う-verb: す)", type: "fill", template: true, slot: "godanVerb", filter: (w) => "す".includes(w.jp.slice(-1)),
+    build: (w) => ({ sentence: `Conjugate ${w.jp} (${cleanGloss(w.en)}) into the て-form.`, answer: conjugate.te(w.jp, w.tags), note: "う-verbs ending in す → して。" }),
+    fallback: () => ({ sentence: "Conjugate はなす (to speak) into the て-form.", answer: "はなして", note: "う-verbs ending in す → して。" }) },
   { id: "c6-4", chapter: 6, point: "～てください", type: "translate", dir: "en-jp",
     sentence: "Please wait a little.",
     translation: "ちょっとまってください。", note: "[て-form]＋ください = please do X。" },
@@ -385,14 +490,18 @@ const GRAMMAR_ITEMS = [
     answer: "てつだいましょうか。", note: "ましょうか here offers to do something FOR the listener。" },
   { id: "c6-9b", chapter: 6, point: "～ましょうか (offering assistance)", type: "fill",
     sentence: "Offer 'Shall I carry your bag?'",
-    answer: "かばんをもちましょうか。", note: "ましょうか here offers to do something FOR the listener。" },
+    answer: "かばんをもちましょうか。", altAnswers: ["にもつをもちましょうか。", "かばんをもってきましょうか。"], note: "ましょうか here offers to do something FOR the listener。" },
 
-  { id: "c7-1", chapter: 7, point: "～ている (action in progress)", type: "fill",
-    sentence: "今、しゅくだいをして＿＿＿。(is doing homework right now)",
-    answer: "います", note: "[て-form]＋いる／います = an action happening right now。" },
-  { id: "c7-1b", chapter: 7, point: "～ている (action in progress)", type: "fill",
-    sentence: "テレビを みて＿＿＿。(is watching TV right now)",
-    answer: "います", note: "[て-form]＋いる／います = an action happening right now。" },
+  { id: "c7-1", chapter: 7, point: "～ている (action in progress)", type: "fill", template: true,
+    words: ["たべる", "のむ", "よむ", "みる", "きく", "はなす", "かく", "まつ", "あそぶ", "およぐ", "つかう", "てつだう"],
+    build: (w) => ({ sentence: `Change to 'is doing it right now':　${conjugate.masu(w.jp, w.tags)} (${cleanGloss(w.en)})`, answer: `${conjugate.te(w.jp, w.tags)}います`, altAnswers: [`${conjugate.te(w.jp, w.tags)}いる`], note: "[て-form]＋います = an action in progress right now。" }),
+    fallback: () => ({ sentence: "Change to 'is doing it right now':　たべます (to eat)", answer: "たべています", note: "[て-form]＋います = an action in progress right now。" }) },
+  { id: "c7-1b", chapter: 7, point: "～ている (action in progress)", type: "translate", dir: "jp-en",
+    variants: [
+      ["いま テレビを みています。", "I am watching TV right now."], ["いま にほんごを べんきょうしています。", "I am studying Japanese right now."],
+      ["ともだちは いま ほんを よんでいます。", "My friend is reading a book right now."], ["いま おんがくを きいています。", "I am listening to music right now."],
+      ["こどもは こうえんで あそんでいます。", "The child is playing in the park."],
+    ].map(([jp, en]) => ({ sentence: jp, translation: en, note: "[て-form]＋います with an activity verb = the action is going on right now。" })) },
   { id: "c7-2", chapter: 7, point: "～ている (result of a change)", type: "translate", dir: "jp-en",
     sentence: "けっこんしています。",
     translation: "I am married.",
@@ -418,19 +527,25 @@ const GRAMMAR_ITEMS = [
     answer: "このへやはしずかで、あのへやはにぎやかです。",
     note: "な-adjective／noun te-form: だ → で。" },
   { id: "c7-5", chapter: 7, point: "Verb stem＋に行く", type: "translate", dir: "en-jp",
-    sentence: "I'm going to the library to study.",
-    translation: "としょかんへべんきょうにいきます。",
-    note: "[verb stem]＋に行く = go (somewhere) in order to do X。" },
-  { id: "c7-5b", chapter: 7, point: "Verb stem＋に行く", type: "translate", dir: "en-jp",
-    sentence: "I'm going to the department store to shop.",
-    translation: "デパートへかいものにいきます。",
-    note: "[verb stem]＋に行く = go (somewhere) in order to do X。" },
+    variants: [
+      ["I'm going to the cafeteria to eat lunch.", "しょくどうへひるごはんをたべにいきます。"], ["I'm going to the department store to buy shoes.", "デパートへくつをかいにいきます。"],
+      ["I'm going to the library to borrow a book.", "としょかんへほんをかりにいきます。"], ["I went to the sea to swim.", "うみへおよぎにいきました。"],
+    ].map(([en, jp]) => ({ sentence: en, translation: jp, note: "[place]へ／に [verb stem]に いく — the stem is the ます-form without ます (たべます → たべ). する-verbs keep し: べんきょうしに いきます。" })) },
+  { id: "c7-5b", chapter: 7, point: "Verb stem＋に行く", type: "fill",
+    variants: [
+      { sentence: "Fill the blank:　としょかんへ ほんを ＿＿＿ いきます。(go to borrow a book)", answer: "かりに" },
+      { sentence: "Fill the blank:　カフェへ コーヒーを ＿＿＿ いきます。(go to drink coffee)", answer: "のみに" },
+      { sentence: "Fill the blank:　デパートへ おみやげを ＿＿＿ いきます。(go to buy a souvenir)", answer: "かいに" },
+      { sentence: "Fill the blank:　うみへ ＿＿＿ いきます。(go to swim)", answer: "およぎに" },
+      { sentence: "Fill the blank:　ともだちの うちへ ＿＿＿ いきます。(go to play／hang out)", answer: "あそびに" },
+      { sentence: "Fill the blank:　としょかんへ ＿＿＿ いきます。(go to study)", answer: "べんきょうしに", altAnswers: ["べんきょうに"] },
+    ].map((v) => ({ ...v, altAnswers: [...(v.altAnswers || []), v.answer + "いきます"], note: "Verb stem (ます-form without ます) + に + いく／くる／かえる = go／come／return in order to do it. A noun of activity can take に directly: かいものに いきます。" })) },
   { id: "c7-6", chapter: 7, point: "Counting people", type: "fill",
     sentence: "Say 'There are three students at the university.' (さんにん＝3 people)",
-    answer: "だいがくにがくせいがさんにんいます。", note: "人 (にん) counts people — with exceptions ひとり／ふたり for 1／2。" },
+    answer: "だいがくにがくせいがさんにんいます。", altAnswers: ["だいがくにさんにんがくせいがいます。", "だいがくにさんにんのがくせいがいます。", "がくせいがだいがくにさんにんいます。", "だいがくにはがくせいがさんにんいます。"], note: "人 (にん) counts people — with exceptions ひとり／ふたり for 1／2。" },
   { id: "c7-6b", chapter: 7, point: "Counting people", type: "fill",
     sentence: "Say 'There are two teachers at the university.' (ふたり＝2 people)",
-    answer: "だいがくにせんせいがふたりいます。", note: "1 and 2 people are irregular: ひとり／ふたり, not いちにん／ににん。" },
+    answer: "だいがくにせんせいがふたりいます。", altAnswers: ["だいがくにふたりせんせいがいます。", "だいがくにふたりのせんせいがいます。", "せんせいがだいがくにふたりいます。", "だいがくにはせんせいがふたりいます。"], note: "1 and 2 people are irregular: ひとり／ふたり, not いちにん／ににん。" },
 ];
 
 const CHAPTER_TITLES = {
@@ -470,7 +585,7 @@ const VOCAB_ITEMS = [
   { id: "v1-28", chapter: 1, jp: "そうです", en: "That's right" },
   { id: "v1-29", chapter: 1, jp: "そうですか", en: "I see; Is that so?" },
   { id: "v1-30", chapter: 1, jp: "イギリス", en: "Britain" },
-  { id: "v1-31", chapter: 1, jp: "アジアけんきょう", en: "Asian studies (major)", tags: ["major"] },
+  { id: "v1-31", chapter: 1, jp: "アジアけんきゅう", en: "Asian studies (major)", tags: ["major"] },
   { id: "v1-32", chapter: 1, jp: "けいざい", en: "economics (major)", tags: ["major"] },
   { id: "v1-33", chapter: 1, jp: "こうがく", en: "engineering (major)", tags: ["major"] },
   { id: "v1-34", chapter: 1, jp: "こくさいかんけい", en: "international relations (major)", tags: ["major"] },
@@ -517,7 +632,7 @@ const VOCAB_ITEMS = [
   { id: "v2-22", chapter: 2, jp: "くつ", en: "shoes" },
   { id: "v2-23", chapter: 2, jp: "さいふ", en: "wallet", tags: ["object"] },
   { id: "v2-24", chapter: 2, jp: "ジーンズ", en: "jeans" },
-  { id: "v2-25", chapter: 2, jp: "じてんしゃ", en: "bicycle", tags: ["object"] },
+  { id: "v2-25", chapter: 2, jp: "じてんしゃ", en: "bicycle" },
   { id: "v2-26", chapter: 2, jp: "しんぶん", en: "newspaper", tags: ["object"] },
   { id: "v2-27", chapter: 2, jp: "スマホ", en: "smartphone; mobile", tags: ["object"] },
   { id: "v2-28", chapter: 2, jp: "とけい", en: "watch; clock", tags: ["object"] },
@@ -777,7 +892,7 @@ const VOCAB_ITEMS = [
   { id: "v7-17", chapter: 7, jp: "めがね", en: "glasses" },
   { id: "v7-18", chapter: 7, jp: "ふとる", en: "to gain weight; to be on the heavy side" },
   { id: "v7-19", chapter: 7, jp: "やせる", en: "to lose weight; to be thin" },
-  { id: "v7-20", chapter: 7, jp: "しっている", en: "to know" },
+  { id: "v7-20", chapter: 7, jp: "しっています", en: "I know" },
   { id: "v7-21", chapter: 7, jp: "はたらく", en: "to work" },
   { id: "v7-22", chapter: 7, jp: "ながい", en: "long", tags: ["iAdj"] },
   { id: "v7-23", chapter: 7, jp: "みじかい", en: "short (length)", tags: ["iAdj"] },
@@ -790,8 +905,22 @@ const VOCAB_ITEMS = [
   { id: "v7-30", chapter: 7, jp: "けっこんする", en: "to get married" },
   { id: "v7-31", chapter: 7, jp: "サークル", en: "club activity" },
   { id: "v7-32", chapter: 7, jp: "うた", en: "song" },
-  { id: "v7-33", chapter: 7, jp: "だれも", en: "nobody (+negative)" },
   { id: "v7-34", chapter: 7, jp: "なにも", en: "not…anything (+negative)" },
+  { id: "v7-35", chapter: 7, jp: "くるま", en: "car" },
+  { id: "v7-36", chapter: 7, jp: "はやい", en: "fast" },
+  { id: "v7-37", chapter: 7, jp: "しんせつ", en: "kind" },
+  { id: "v7-38", chapter: 7, jp: "べんり", en: "convenient" },
+  { id: "v7-39", chapter: 7, jp: "うたう", en: "to sing" },
+  { id: "v7-40", chapter: 7, jp: "かぶる", en: "to put on (a hat)" },
+  { id: "v7-41", chapter: 7, jp: "はく", en: "to put on (items below your waist)" },
+  { id: "v7-42", chapter: 7, jp: "しる", en: "to get to know" },
+  { id: "v7-43", chapter: 7, jp: "しりません", en: "I do not know" },
+  { id: "v7-44", chapter: 7, jp: "すむ", en: "to live" },
+  { id: "v7-45", chapter: 7, jp: "かける", en: "to put on (glasses)" },
+  { id: "v7-46", chapter: 7, jp: "きる", en: "to put on (clothes above your waist)" },
+  { id: "v7-47", chapter: 7, jp: "べつに", en: "nothing in particular (+negative)" },
+  { id: "v7-48", chapter: 7, jp: "もちろん", en: "of course" },
+  { id: "v7-49", chapter: 7, jp: "よかったら", en: "if you like" },
 ];
 
 const VOCAB_CHAPTER_TITLES = {
@@ -901,28 +1030,56 @@ const KANA_ITEMS = [
   { id: "kd-po", chapter: 4, kana: "ポ", romaji: "po", script: "katakana" },
 ];
 
+// Combination sounds (きゃ, しゅ, ちょ…) and words with a small っ.
+[["き","キ","ky"],["し","シ","sh"],["ち","チ","ch"],["に","ニ","ny"],["ひ","ヒ","hy"],["み","ミ","my"],["り","リ","ry"],
+ ["ぎ","ギ","gy"],["じ","ジ","j"],["び","ビ","by"],["ぴ","ピ","py"]].forEach(([h, k, r]) =>
+  [["ゃ","ャ","a"],["ゅ","ュ","u"],["ょ","ョ","o"]].forEach(([hs, ks, v]) => {
+    KANA_ITEMS.push({ id: `hy-${r}${v}`, chapter: 5, kana: h + hs, romaji: r + v, script: "hiragana" });
+    KANA_ITEMS.push({ id: `ky-${r}${v}`, chapter: 6, kana: k + ks, romaji: r + v, script: "katakana" });
+  }));
+[["きって","kitte"],["かった","katta"],["ざっし","zasshi"],["いっぱい","ippai"],["まって","matte"],["きっぷ","kippu"]]
+  .forEach(([k, r], i) => KANA_ITEMS.push({ id: `hs-${i}`, chapter: 5, kana: k, romaji: r, script: "hiragana" }));
+[["カップ","kappu"],["ベッド","beddo"],["ネット","netto"],["コップ","koppu"],["チケット","chiketto"],["ペット","petto"]]
+  .forEach(([k, r], i) => KANA_ITEMS.push({ id: `ks-${i}`, chapter: 6, kana: k, romaji: r, script: "katakana" }));
+
 const KANA_CHAPTER_TITLES = {
   1: "ひらがな — Basic 46", 2: "ひらがな — Dakuten／Handakuten (゛゜)",
   3: "カタカナ — Basic 46", 4: "カタカナ — Dakuten／Handakuten (゛゜)",
+  5: "ひらがな — Combinations (きゃ) & small っ", 6: "カタカナ — Combinations (キャ) & small ッ",
 };
 
-// Turns a kana character into a quiz item shaped like a grammar/vocab item.
-const buildKanaQuizItem = (k, type, pool) => {
-  const base = { id: k.id, chapter: k.chapter, point: `${k.script === "hiragana" ? "Hiragana" : "Katakana"}` };
-  const sameScript = pool.filter((w) => w.script === k.script && w.id !== k.id);
+// Other common romaji spellings that should also count as correct.
+const romajiAlts = (k) => {
+  const r = k.romaji, out = new Set();
+  [[/shi/, "si"], [/chi/, "ti"], [/tsu/, "tu"], [/fu/, "hu"], [/ji/, "zi"],
+   [/sh(?=[auo])/, "sy"], [/ch(?=[auo])/, "ty"], [/j(?=[auo])/, "zy"], [/j(?=[auo])/, "jy"]]
+    .forEach(([a, b]) => { if (a.test(r)) out.add(r.replace(a, b)); });
+  if ("をヲ".includes(k.kana)) out.add("o");
+  if ("ぢヂ".includes(k.kana)) out.add("di");
+  if ("づヅ".includes(k.kana)) { out.add("du"); out.add("dzu"); }
+  out.delete(r);
+  return [...out];
+};
+
+// Turns a kana item into a quiz item shaped like a grammar/vocab item.
+// Wrong options come from the same group and never share the answer's
+// reading (じ／ぢ and ず／づ are read the same).
+const buildKanaQuizItem = (k, type) => {
+  const base = { id: k.id, chapter: k.chapter, point: k.script === "hiragana" ? "Hiragana" : "Katakana" };
+  const isWord = k.kana.length > 2;
+  let others = KANA_ITEMS.filter((w) => w.chapter === k.chapter && (w.kana.length > 2) === isWord && w.id !== k.id && w.romaji !== k.romaji);
+  if (others.length < 3) others = KANA_ITEMS.filter((w) => w.script === k.script && w.id !== k.id && w.romaji !== k.romaji);
   if (type === "mc") {
-    const dir = Math.random() < 0.5 ? "read" : "recognize";
-    if (dir === "read") {
-      const distractors = sampleN(sameScript.filter((w) => w.romaji !== k.romaji), 3).map((w) => w.romaji);
-      return { ...base, type: "mc", sentence: `What sound does「${k.kana}」make?`, answer: k.romaji, options: shuffle([k.romaji, ...distractors]) };
+    if (Math.random() < 0.5) {
+      return { ...base, type: "mc", sentence: `How is「${k.kana}」read?`, answer: k.romaji, options: shuffle([k.romaji, ...sampleN([...new Set(others.map((w) => w.romaji))], 3)]) };
     }
-    const distractors = sampleN(sameScript, 3).map((w) => w.kana);
-    return { ...base, type: "mc", sentence: `Which character makes the sound "${k.romaji}"?`, answer: k.kana, options: shuffle([k.kana, ...distractors]) };
+    return { ...base, type: "mc", sentence: `Which one is read "${k.romaji}"?`, answer: k.kana, options: shuffle([k.kana, ...sampleN(others, 3).map((w) => w.kana)]) };
   }
   if (type === "fill") {
-    return { ...base, type: "fill", sentence: `Write the romaji for: ${k.kana}`, answer: k.romaji };
+    return { ...base, type: "fill", sentence: `Write the romaji for: ${k.kana}`, answer: k.romaji, altAnswers: romajiAlts(k) };
   }
-  return { ...base, type: "translate", dir: "en-jp", sentence: k.romaji, translation: k.kana };
+  return { ...base, type: "translate", dir: "en-jp", sentence: k.romaji, translation: k.kana,
+    note: "ぢづヂヅ".includes(k.kana) ? "じ／ぢ and ず／づ are read the same; ぢ and づ are the rare ones。" : undefined };
 };
 
 const UPCOMING_CHAPTERS = [8, 9, 10, 11, 12];
@@ -965,30 +1122,40 @@ const weightedTake = (items, weightFn, n) => {
   return keyed.slice(0, n).map((k) => k.it);
 };
 
+// How strongly an item is favoured when a session is drawn. Based on the
+// current run of correct answers, so one old miss stops counting once the
+// item has been answered correctly a few times in a row.
 const priorityWeight = (id, stats) => {
   const s = stats[id];
-  if (!s || s.total === 0) return 6;
-  if (s.lastResult === "incorrect") return 5;
-  const acc = s.correct / s.total;
-  if (acc < 0.5) return 4;
-  if (acc < 0.8) return 2;
-  return 1;
+  if (!s || s.total === 0) return 4;          // never seen
+  let streak = s.streak;
+  if (streak === undefined) {                  // stats saved before streaks existed
+    streak = s.lastResult === "incorrect" ? 0 : (s.correct / s.total >= 0.8 ? 3 : 1);
+  }
+  if (streak === 0) return 2.5;                // missed last time
+  if (streak === 1) return 1.75;
+  if (streak === 2) return 1.25;
+  return 1;                                    // three or more right in a row
 };
 
 // Turns a vocab word into a quiz item shaped just like a grammar item.
+// Two words "share a meaning" when one of their glosses is identical
+// (はい／ええ = "yes", いえ／うち = "home; house"). Such words are never
+// offered as wrong options for each other, and either is accepted when typed.
+const glossParts = (en) => en.toLowerCase().split(";").map((x) => x.trim());
+const sharesGloss = (a, b) => { const pa = glossParts(a.en); return glossParts(b.en).some((x) => pa.includes(x)); };
 const buildVocabQuizItem = (word, type, pool) => {
   const base = { id: word.id, chapter: word.chapter, point: `Lesson ${word.chapter} vocabulary` };
+  const others = pool.filter((w) => w.id !== word.id && w.jp !== word.jp && !sharesGloss(w, word));
   if (type === "mc") {
-    const dir = Math.random() < 0.5 ? "jp-en" : "en-jp";
-    if (dir === "jp-en") {
-      const distractors = sampleN(pool.filter((w) => w.id !== word.id && w.en !== word.en), 3).map((w) => w.en);
-      return { ...base, type: "mc", sentence: `What does「${word.jp}」mean?`, answer: word.en, options: shuffle([word.en, ...distractors]) };
+    if (Math.random() < 0.5) {
+      return { ...base, type: "mc", sentence: `What does「${word.jp}」mean?`, answer: word.en, options: shuffle([word.en, ...sampleN([...new Set(others.map((w) => w.en))], 3)]) };
     }
-    const distractors = sampleN(pool.filter((w) => w.id !== word.id && w.jp !== word.jp), 3).map((w) => w.jp);
-    return { ...base, type: "mc", sentence: `Which word means "${word.en}"?`, answer: word.jp, options: shuffle([word.jp, ...distractors]) };
+    return { ...base, type: "mc", sentence: `Which word means "${word.en}"?`, answer: word.jp, options: shuffle([word.jp, ...sampleN([...new Set(others.map((w) => w.jp))], 3)]) };
   }
   if (type === "fill") {
-    return { ...base, type: "fill", sentence: `Write the Japanese word for: "${word.en}"`, answer: word.jp };
+    const same = VOCAB_ITEMS.filter((w) => w.jp !== word.jp && w.chapter <= 7 && sharesGloss(w, word)).map((w) => w.jp);
+    return { ...base, type: "fill", sentence: `Write the Japanese word for: "${word.en}"`, answer: word.jp, altAnswers: same };
   }
   return { ...base, type: "translate", dir: "jp-en", sentence: word.jp, translation: word.en };
 };
@@ -1028,27 +1195,39 @@ const conjugate = {
 const iAdjPast = (word) => word.slice(0, -1) + "かった";
 const iAdjNeg = (word) => word.slice(0, -1) + "くない";
 
-// Picks a random vocab word tagged with `tag` (or any of several
-// pipe-separated tags), taught by chapter `maxChapter` or earlier.
-const pickVocabWord = (tag, maxChapter) => {
-  const wanted = tag.split("|");
-  const candidates = VOCAB_ITEMS.filter(
-    (w) => w.chapter <= maxChapter && (w.tags || []).some((t) => wanted.includes(t))
-  );
-  return candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : null;
-};
+// Tidy a vocabulary gloss for use inside a sentence: "watch; clock" → "watch",
+// "to take (a picture)" → "to take".
+const cleanGloss = (en) => en.split(";")[0].replace(/\s*\([^)]*\)/g, "").trim();
+const withArticle = (g) => (/^[aeiou]/i.test(g) ? "an " : "a ") + g;
 
-// Grammar items store mc options in a fixed order (answer always
-// listed first in the data for readability) — shuffle them fresh
-// every time a queue is built so the position is never a giveaway.
-// Template items (item.template === true) get a fresh word substituted
-// in from the tagged vocab pool and their answer recomputed each time.
-const prepGrammarItem = (item) => {
+// Words a template may use: taught by the item's chapter, and either named
+// in item.words or carrying one of the item.slot tags (pipe-separated).
+const templateCandidates = (item) => VOCAB_ITEMS.filter((w) =>
+  w.chapter <= item.chapter &&
+  (item.words ? item.words.includes(w.jp) : (w.tags || []).some((t) => item.slot.split("|").includes(t))) &&
+  (!item.filter || item.filter(w)));
+
+// Prepares one grammar item for a session.
+//  - item.variants: a hand-written list of versions; one is picked.
+//  - item.template: a word is picked from the vocabulary and the answer computed.
+// `used` is shared across one session so the same word or version is not
+// drawn twice. Multiple-choice options are shuffled every time.
+const prepGrammarItem = (item, used = new Set()) => {
+  const pickFresh = (list, keyOf) => {
+    if (!list.length) return null;
+    const fresh = list.filter((x) => !used.has(keyOf(x)));
+    const from = fresh.length ? fresh : list;
+    const chosen = from[Math.floor(Math.random() * from.length)];
+    used.add(keyOf(chosen));
+    return chosen;
+  };
+  const head = { id: item.id, chapter: item.chapter, point: item.point, type: item.type, dir: item.dir };
   let out = item;
-  if (item.template) {
-    const word = pickVocabWord(item.slot, item.chapter);
-    const built = word ? item.build(word) : item.fallback();
-    out = { id: item.id, chapter: item.chapter, point: item.point, type: item.type, dir: item.dir, ...built };
+  if (item.variants) {
+    out = { ...head, ...pickFresh(item.variants, (v) => v.sentence) };
+  } else if (item.template) {
+    const word = pickFresh(templateCandidates(item), (w) => w.jp);
+    out = { ...head, ...(word ? item.build(word) : item.fallback()) };
   }
   return out.type === "mc" ? { ...out, options: shuffle(out.options) } : out;
 };
@@ -1116,7 +1295,8 @@ function App() {
   const startQuiz = () => {
     const n = sessionSize === "all" ? pool.length : Math.min(sessionSize, pool.length);
     if (isGrammar) {
-      const picked = weightedTake(pool, (it) => priorityWeight(it.id, stats), n).map(prepGrammarItem);
+      const used = new Set();
+      const picked = weightedTake(pool, (it) => priorityWeight(it.id, stats), n).map((it) => prepGrammarItem(it, used));
       setQueue(picked);
     } else {
       const items = weightedTake(rawPool, (w) => priorityWeight(w.id, stats), n);
@@ -1139,7 +1319,7 @@ function App() {
     const base = allStats[mode];
     const next = { ...base };
     const s = next[itemId] || { correct: 0, total: 0 };
-    next[itemId] = { correct: s.correct + (correct ? 1 : 0), total: s.total + 1, lastResult: correct ? "correct" : "incorrect" };
+    next[itemId] = { correct: s.correct + (correct ? 1 : 0), total: s.total + 1, lastResult: correct ? "correct" : "incorrect", streak: correct ? (s.streak || 0) + 1 : 0 };
     setAllStats((prev) => ({ ...prev, [mode]: next }));
     saveStats(statsKey, next);
     setScore((sc) => ({ correct: sc.correct + (correct ? 1 : 0), total: sc.total + 1 }));
@@ -1411,7 +1591,7 @@ const S = {
   quitBtn: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, background: "transparent", border: `1.5px solid ${COLORS.ink}`, borderRadius: 6, padding: "8px 14px", color: COLORS.ink, cursor: "pointer" },
   modeRow: { maxWidth: 720, margin: "0 auto", padding: "0 20px 16px", display: "flex", gap: 8 },
   modeBtn: { flex: 1, fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, fontSize: 14, padding: "10px 14px", borderRadius: 8, border: `1.5px solid ${COLORS.line}`, background: "transparent", color: COLORS.inkSoft, cursor: "pointer" },
-  modeBtnActive: { borderColor: COLORS.shu, background: `${COLORS.shu}14`, color: COLORS.shuDeep },
+  modeBtnActive: { border: `1.5px solid ${COLORS.shu}`, background: `${COLORS.shu}14`, color: COLORS.shuDeep },
   main: { position: "relative", maxWidth: 720, margin: "0 auto", padding: "28px 20px 80px" },
 
   setupWrap: { display: "flex", flexDirection: "column", gap: 22 },
@@ -1419,7 +1599,7 @@ const S = {
   cardLabel: { fontFamily: "'JetBrains Mono', monospace", fontSize: 11, letterSpacing: 2, color: COLORS.shu, marginBottom: 14, fontWeight: 600 },
   chapterGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 },
   chapterTile: { textAlign: "left", background: "transparent", border: `1.5px solid ${COLORS.line}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", fontFamily: "'Zen Kaku Gothic New', sans-serif", color: COLORS.inkSoft },
-  chapterTileActive: { background: COLORS.ink, borderColor: COLORS.ink, color: COLORS.paper },
+  chapterTileActive: { background: COLORS.ink, border: `1.5px solid ${COLORS.ink}`, color: COLORS.paper },
   chapterTileDisabled: { textAlign: "left", border: `1.5px dashed ${COLORS.line}`, borderRadius: 8, padding: "10px 12px", color: `${COLORS.inkSoft}88`, fontFamily: "'Zen Kaku Gothic New', sans-serif" },
   chapterNum: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, opacity: 0.75 },
   chapterName: { fontSize: 13, marginTop: 3, fontWeight: 500 },
@@ -1427,13 +1607,13 @@ const S = {
 
   typeRow: { display: "flex", gap: 10, flexWrap: "wrap" },
   typeChip: { flex: "1 1 160px", textAlign: "left", background: "transparent", border: `1.5px solid ${COLORS.line}`, borderRadius: 8, padding: "12px 14px", cursor: "pointer" },
-  typeChipActive: { borderColor: COLORS.shu, background: `${COLORS.shu}14` },
+  typeChipActive: { border: `1.5px solid ${COLORS.shu}`, background: `${COLORS.shu}14` },
   typeChipLabel: { fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 700, fontSize: 14 },
   typeChipDesc: { fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: COLORS.inkSoft, marginTop: 4 },
 
   sizeRow: { display: "flex", gap: 8, flexWrap: "wrap" },
   sizeChip: { minWidth: 56, textAlign: "center", background: "transparent", border: `1.5px solid ${COLORS.line}`, borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, fontSize: 13 },
-  sizeChipActive: { borderColor: COLORS.shu, background: `${COLORS.shu}14`, color: COLORS.shuDeep },
+  sizeChipActive: { border: `1.5px solid ${COLORS.shu}`, background: `${COLORS.shu}14`, color: COLORS.shuDeep },
   sizeNote: { fontFamily: "'Source Serif 4', serif", fontStyle: "italic", fontSize: 12.5, color: COLORS.inkSoft, marginTop: 10 },
 
   startRow: { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
@@ -1443,8 +1623,8 @@ const S = {
   quizWrap: { display: "flex", flexDirection: "column", gap: 16 },
   progressRow: { display: "flex", gap: 4, flexWrap: "wrap" },
   progressCell: { width: 14, height: 14, border: `1.5px solid ${COLORS.line}`, borderRadius: 2 },
-  progressCellDone: { background: COLORS.ink, borderColor: COLORS.ink },
-  progressCellCurrent: { borderColor: COLORS.shu, borderWidth: 2 },
+  progressCellDone: { background: COLORS.ink, border: `1.5px solid ${COLORS.ink}` },
+  progressCellCurrent: { border: `2px solid ${COLORS.shu}` },
   metaRow: { display: "flex", justifyContent: "space-between", alignItems: "center" },
   chapterBadge: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: COLORS.ai, fontWeight: 600 },
   scoreText: { fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: COLORS.inkSoft },
@@ -1454,9 +1634,9 @@ const S = {
 
   optionsGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 },
   optionBtn: { fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 16, padding: "12px 10px", borderRadius: 8, border: `1.5px solid ${COLORS.ink}`, background: COLORS.paper, cursor: "pointer", outline: "none" },
-  optionChosen: { background: `${COLORS.ai}22`, borderColor: COLORS.ai },
-  optionCorrect: { background: `${COLORS.good}22`, borderColor: COLORS.good, color: COLORS.good, fontWeight: 700 },
-  optionWrong: { background: `${COLORS.shu}18`, borderColor: COLORS.shu, color: COLORS.shu, textDecoration: "line-through" },
+  optionChosen: { background: `${COLORS.ai}22`, border: `1.5px solid ${COLORS.ai}` },
+  optionCorrect: { background: `${COLORS.good}22`, border: `1.5px solid ${COLORS.good}`, color: COLORS.good, fontWeight: 700 },
+  optionWrong: { background: `${COLORS.shu}18`, border: `1.5px solid ${COLORS.shu}`, color: COLORS.shu, textDecoration: "line-through" },
 
   fillInput: { width: "100%", fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 18, padding: "12px 14px", borderRadius: 8, border: `1.5px solid ${COLORS.ink}`, background: "#fff", boxSizing: "border-box" },
   translateInput: { width: "100%", minHeight: 70, fontFamily: "'Zen Kaku Gothic New', sans-serif", fontSize: 16, padding: "12px 14px", borderRadius: 8, border: `1.5px solid ${COLORS.ink}`, background: "#fff", boxSizing: "border-box", resize: "vertical" },
